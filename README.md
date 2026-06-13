@@ -19,7 +19,6 @@ by the Rankine-Hugoniot relations. This keeps the region between the wall and
 the shock smooth, allowing high-order finite differences to be used for
 boundary-layer stability and receptivity calculations without shock smearing.
 
-![LASTFit workflow](Figure/lastfit_workflow.png)
 
 ## Main Features
 
