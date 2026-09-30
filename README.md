@@ -1,5 +1,17 @@
 # LASTFit Part I
-
+   _____ _                _   ______ _ _   _   _             _____       _                        
+  /  ___| |              | |  |  ___(_) | | | (_)           /  ___|     | |                       
+ \ \--\| |__   ___   ___| | _| |_   _| |_| |_ _ _ __   __ _\ \--\  ___ | |_   _____ _ __        
+  \--\ \ |_ \ / _ \ / __| |/ /  _| | | __| __| | '_ \ / _` |\--\ \/ _ \| \ \ / / _ \ '__|         
+ /\__/ / | | | (_) | (__|   <| |   | | |_| |_| | | | | (_| /\__/ / (_) | |\ V /  __/ |            
+ \____/|_| |_|\___/ \___|_|\_\_|   |_|\__|\__|_|_| |_|\__  \____/ \___/|_| \_/ \___|_|            
+                                                       __/ |                                     
+                                                      |___/                                       
+                                                                             Version 0.1.0       
+                                                                                                   
+                     The fitting solver is first developed at LAST Group @Tsinghua University      
+                                                                                                  
+                                                         Developed By Zhichao Zhu & Youcheng Xi  
 Three-dimensional MPI shock fitting for perfect-gas hypersonic base flows and
 receptivity calculations.
 
