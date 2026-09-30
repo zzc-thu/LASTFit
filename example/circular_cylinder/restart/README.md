@@ -1,5 +1,7 @@
-# Restart files
+# Restart Data
 
-This directory contains the eight flow files and eight fitted-shock files for
-the 101 x 61 x 20 calculation. Together they form one distributed restart for
-the 4 x 2 MPI decomposition in `Config.cfg`.
+This directory contains eight `SF_Results*.flowsfg` files and eight matching
+`SF_Results*.shksfg` files for the 4 x 2 MPI decomposition.
+
+Because `Config.cfg` enables continuation, copy every file in this directory to
+the run directory's `RESU/` before launching eight MPI ranks.

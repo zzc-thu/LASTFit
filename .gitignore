@@ -1,0 +1,21 @@
+# Fortran build products
+*.o
+*.mod
+src/SFSolver
+
+# Runtime directories created by the default src/Makefile
+src/INIT/
+src/CheckFiles/
+src/JACO/
+src/RESU/
+src/RESU_STEADY/
+src/LNSResults/
+src/Pert/
+
+# User-staged calculations
+run/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+*~

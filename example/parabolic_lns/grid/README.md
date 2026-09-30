@@ -1,4 +1,6 @@
-# Grid files
+# Reference Grid
 
-The included `Initial_grid.pvts` and VTS piece define the 81 x 51 x 8 grid used
-by the available AD-LNS calculation.
+`Initial_grid.pvts` and its VTS piece define the 81 x 51 x 8 compact grid used
+by the included AD-LNS example.
+
+The file is a reference artifact; the solver regenerates the grid in `INIT/`.

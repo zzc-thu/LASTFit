@@ -1,24 +1,46 @@
-# Blunt cone at 1 degree angle of attack
+# Blunt Cone at 1 Degree Angle of Attack
 
-This case evaluates the asymmetric three-dimensional steady base flow and the
-polar-axis treatment for a Mach 6 spherical-nosed cone.
+This case exercises asymmetric three-dimensional steady shock fitting and the
+polar-axis treatment for Mach 6 flow over a spherical-nosed cone.
 
-## Included configuration
+## Configuration
 
-- Grid declared by `Config.cfg`: 120 x 151 x 40
-- Mach number: 6
-- Reynolds number: 10000
-- Cone half-angle: 5 degrees
-- Angle of attack: 1 degree
+| Parameter | Value |
+|---|---:|
+| Analysis mode | Steady nonlinear Navier-Stokes |
+| Grid | 120 x 151 x 40 |
+| MPI decomposition | 4 x 2 (8 ranks) |
+| Mach number | 6 |
+| Reynolds number | 10000 |
+| Cone half-angle | 5 degrees |
+| Angle of attack | 1 degree |
+| Continuation | Disabled |
 
-## Release status
+## Included Data
 
-The solver configuration, eight-piece initial grid, and matching eight-rank
-flow/shock restart for 120 x 151 x 40 are included. The manuscript currently
-reports 30 x 101 x 40, while the legacy PVTS file used with the plotting data
-has a different extent. These records must not be presented as one run until
-their provenance is resolved.
+- `Config.cfg`: runtime namelist for a new steady calculation.
+- `grid/`: complete eight-piece reference grid.
+- `restart/`: matching eight-rank checkpoint retained as a reference.
+- `output/`: complete eight-piece three-dimensional VTK field.
+- `SHA256SUMS`: checksums for all configuration and numerical files.
 
-`output/` contains one matching three-dimensional field. The windward/leeward
-wall-pressure samples and their manuscript-grid provenance still need to be
-resolved before the comparison is fully reproducible.
+## Run
+
+The supplied configuration starts a new calculation and therefore does not
+read the files under `restart/`:
+
+```bash
+run_dir=/path/to/prepared/run
+cd "$run_dir"
+mpirun -np 8 ./SFSolver
+```
+
+To continue from the supplied checkpoint, copy `restart/*` to `RESU/` and set
+`IF_Continue_Calculate=1` in the staged `Config.cfg`.
+
+## Data Scope
+
+The release assets form a consistent 120 x 151 x 40 case. They are separate
+from the lower-resolution grid quoted for the manuscript wall-pressure
+comparison; reference curves and plotting data for that comparison are not
+included here.

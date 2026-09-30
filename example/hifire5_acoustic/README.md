@@ -1,41 +1,52 @@
-# HIFiRE-5-type elliptic cone
+# HIFiRE-5-Type Elliptic Cone
 
-This example is the non-axisymmetric three-dimensional application of the
-steady and nonlinear acoustic-forcing workflow.
+This directory records the non-axisymmetric three-dimensional steady and
+nonlinear acoustic-forcing workflow for a HIFiRE-5-type elliptic cone.
 
-## Included configurations
+## Configurations
 
-- `Config.cfg`: unsteady acoustic setup, 90 x 81 x 160
-- `Config_steady.cfg`: steady setup, 90 x 41 x 40
-- `Config_E4_fine.cfg`: archived E-4 manuscript run, 160 x 151 x 160
-- Mach number: 6
-- Unit Reynolds number: 10.2e6
-- Cone half-angle: 7 degrees
+| File | Purpose | Grid | MPI ranks | Status |
+|---|---|---:|---:|---|
+| `Config.cfg` | Compact nonlinear acoustic setup | 90 x 81 x 160 | 4 | Current release setup |
+| `Config_steady.cfg` | Compact steady setup | 90 x 41 x 40 | 1 | Current release setup |
+| `Config_E4_fine.cfg` | E-4 manuscript-run record | 160 x 151 x 160 | 192 | Historical provenance |
 
-## Release status
+All three configurations use Mach 6, unit Reynolds number 10.2e6, and a
+7-degree cone half-angle. The E-4 record specifies `epsilon=5e-4`,
+`k_infty=3700`, `FixedDeltaTime=1e-7`, and an output interval of 2000 steps.
 
-The 90 x 81 x 160 unsteady grid and its four-rank base-flow restart are
-included. `Config.cfg` uses four circumferential MPI partitions to match those
-files. The one-piece 90 x 41 x 40 steady grid is also included. These are
-legacy setup records and must not be presented as the 160 x 151 x 160
-manuscript calculation.
+`Config_E4_fine.cfg` was recovered with a historical executable whose model
+numbering differs from the current source. It also requires the external
+192-rank base-flow restart. Treat it as provenance; do not substitute the
+included four-rank grid or restart.
 
-`Config_E4_fine.cfg` is the configuration recovered with the manuscript E-4
-dataset. It records `epsilon=5e-4`, `k_infty=3700`, `dt=1e-7`, an output
-interval of 2000 steps, and a 12 x 16 MPI layout. It uses the model numbering
-of the historical executable (`ModelType=2`), which differs from the current
-release configuration; retain it as provenance unless compatibility with a
-new executable has been tested.
+## Included Data
 
-`output/manuscript_fine/wall_harmonic/` contains the complete wall
-first-harmonic field used by the manuscript HIFiRE discussion. Additional
-post-processing figures, CSV files, modal-analysis products, and analysis
-scripts are intentionally excluded from the example so that it follows the
-standard `Config.cfg`, `grid/`, `restart/`, `output/`, and `README.md` layout.
+- `grid/steady/`: one-piece compact steady reference grid.
+- `grid/unsteady/`: four-piece compact unsteady reference grid.
+- `restart/unsteady/`: matching four-rank flow and fitted-shock restart.
+- `output/steady/`: compact steady VTK field.
+- `output/manuscript_fine/wall_harmonic/`: complete 192-piece wall harmonic
+  used by the manuscript discussion.
+- `SHA256SUMS`: checksums for all configurations and numerical files.
 
-The full fine-grid base-flow field, one complete E-4 perturbation snapshot,
-and full three-dimensional harmonic field were verified in the raw archive,
-but are approximately 281 MB, 360 MB, and 320 MB, respectively. They should be
-distributed through the versioned data archive/DOI rather than duplicated in
-the ordinary Git tree. The fine-grid initial `INIT` dataset has not yet been
-located and remains the main missing input artifact.
+## Run the Compact Unsteady Setup
+
+The primary `Config.cfg` starts a new four-rank calculation:
+
+```bash
+run_dir=/path/to/prepared/run
+cd "$run_dir"
+mpirun -np 4 ./SFSolver
+```
+
+To use the included checkpoint, copy `restart/unsteady/*` to `RESU/` and set
+`IF_Continue_Calculate=1` in the staged configuration.
+
+## Data Scope
+
+The full 160 x 151 x 160 base-flow field, one E-4 perturbation snapshot, and
+the full three-dimensional harmonic field are approximately 281 MB, 360 MB,
+and 320 MB, respectively, and remain outside the Git tree. The repository
+retains the compact wall-harmonic field required to inspect the manuscript
+amplitude and phase result.

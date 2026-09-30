@@ -1,4 +1,6 @@
-# Restart files
+# Restart Data
 
-This directory contains the one-rank flow and fitted-shock restart stored with
-the nonlinear fast-acoustic configuration.
+The flow and fitted-shock files form the one-rank nonlinear restart selected by
+`Config.cfg`.
+
+Copy both files to the run directory's `RESU/` before launching the case.

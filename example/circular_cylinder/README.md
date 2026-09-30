@@ -1,27 +1,47 @@
-# Circular cylinder
+# Circular Cylinder
 
-This case evaluates the steady shock-fitting solution for Mach 5.73 viscous
-flow over a circular cylinder. The three-dimensional solver is run with a
-spanwise-uniform, periodic solution to exercise the three-dimensional storage,
-metric, boundary-condition, and output paths.
+This case exercises steady viscous shock fitting for Mach 5.73 flow over a
+circular cylinder. The solution is spanwise uniform and periodic, while the
+three-dimensional storage, metric, MPI, boundary-condition, and output paths
+remain active.
 
-## Included configuration
+## Configuration
 
-- Grid: 101 x 61 x 20
-- Reynolds number: 2050
-- Wall condition: isothermal
-- Analysis: steady nonlinear Navier-Stokes
+| Parameter | Value |
+|---|---:|
+| Analysis mode | Steady nonlinear Navier-Stokes |
+| Grid | 101 x 61 x 20 |
+| MPI decomposition | 4 x 2 (8 ranks) |
+| Mach number | 5.73 |
+| Reynolds number | 2050 |
+| Wall condition | Isothermal |
+| Continuation | Enabled |
 
-The grid dimensions match the case documented in the manuscript.
+## Included Data
 
-## Release status
+- `Config.cfg`: runtime namelist.
+- `grid/`: complete eight-piece reference grid.
+- `restart/`: eight flow files and eight fitted-shock files.
+- `output/`: complete eight-piece final VTK field.
+- `SHA256SUMS`: checksums for all configuration and numerical files.
 
-`Config.cfg`, the eight-piece distributed grid, and the matching eight-rank
-flow/shock restart are included. Their hashes are recorded in `SHA256SUMS`.
-Do not use perturbation or LNS files found beside the legacy calculation:
-representative files in those directories belong to a parabolic-leading-edge
-grid.
+## Run
 
-`output/` contains the final parallel VTK field, including pressure and
-temperature. The digitized wall-pressure comparison data and plotting script
-remain to be added.
+Stage the restart under `RESU/`, then launch eight MPI ranks:
+
+```bash
+run_dir=/path/to/prepared/run
+cp restart/* "$run_dir/RESU/"
+cd "$run_dir"
+mpirun -np 8 ./SFSolver
+```
+
+The executable regenerates the grid in `INIT/` and writes nonlinear fields and
+updated restart files to `RESU/`.
+
+## Data Scope
+
+The grid dimensions match the circular-cylinder case described in the
+manuscript. The repository includes the solver field used for release
+inspection; digitized literature curves and publication plotting files are not
+part of this solver example.

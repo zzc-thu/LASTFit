@@ -1,198 +1,226 @@
-# LASTFit
+# LASTFit Part I
 
-```
- _        _    ____ _____ _____ _ _
-| |      / \  / ___|_   _|  ___(_) |_
-| |     / _ \ \___ \ | | | |_  | | __|
-| |___ / ___ \ ___) || | |  _| | | |_
-|_____/_/   \_\____/ |_| |_|   |_|\__|
+Three-dimensional MPI shock fitting for perfect-gas hypersonic base flows and
+receptivity calculations.
 
-Three-dimensional high-order shock-fitting solver for hypersonic flows
-```
+LASTFit advances the flow field together with a fitted bow-shock boundary. The
+post-shock domain therefore remains smooth and can be discretized with
+high-order finite differences without representing the shock as a smeared
+capturing layer. Part I integrates steady and nonlinear unsteady Navier-Stokes
+calculations with an automatic-differentiation-generated linearized
+Navier-Stokes (LNS) solver in the same moving-shock framework.
 
-LASTFit is a Fortran 90 software package for smooth hypersonic base-flow
-computation and acoustic-forcing unsteady-field analysis using a high-order
-shock-fitting finite-difference method.
+The current research release is **v0.1.0**. It contains the perfect-gas solver,
+source-generated grids, MPI decomposition, representative validation data, and
+compact examples. Reacting five-species and eleven-species models and
+multigrid extensions are planned for Part II and are not included here.
 
-The code treats the bow shock as a sharp moving computational boundary governed
-by the Rankine-Hugoniot relations. This keeps the region between the wall and
-the shock smooth, allowing high-order finite differences to be used for
-boundary-layer stability and receptivity calculations without shock smearing.
+## Capabilities
 
-
-## Main Features
-
-- Three-dimensional body-fitted structured-grid shock-fitting formulation.
-- Nonlinear steady and unsteady Navier-Stokes solver for hypersonic flows.
-- Explicit and implicit time-advancement options for base-flow computation.
-- Acoustic-forcing unsteady simulations for receptivity studies.
-- Linearized Navier-Stokes shock-fitting solver obtained by perturbing the full
-  coupled flow, grid, and shock-motion system.
-- TAPENADE-generated tangent Fortran routines for LNS Jacobian operations.
-- High-order finite differences: fifth-order upwind discretization for
-  inviscid terms and sixth-order central discretization for viscous terms.
-- MPI domain decomposition for CPU-based parallel calculations.
-- ParaView-compatible VTK output for flow, shock, wall-history, and
-  perturbation-field visualization.
-
-## Validation and Demonstration Cases
-
-The accompanying manuscript and figures document the following benchmark and
-demonstration cases:
-
-- Hypersonic viscous flow over a circular cylinder.
-- Steady and unsteady flow over a parabolic leading edge.
-- Linearized shock-fitting calculation over a parabolic leading edge.
-- Three-dimensional blunt cone at 1 degree angle of attack.
-- HIFiRE-5-type elliptic cone with steady base flow and fast-acoustic
-  receptivity response.
-
-The reported outputs include wall pressure, temperature contours, vorticity,
-pressure derivatives, perturbation amplitudes, wall-pressure histories,
-Fourier amplitudes and phases, and spectra.
-
-## Requirements
-
-LASTFit is intended for Linux-based high-performance computing environments.
-The recommended release configuration is:
-
-- Fortran 90 compiler with MPI support, for example Intel oneAPI Fortran with
-  an MPI Fortran compiler wrapper.
-- MPI runtime.
-- BLAS/LAPACK or Intel MKL.
-- VTK-compatible output workflow for post-processing.
-- TAPENADE, only when regenerating the tangent routines. The generated tangent
-  Fortran files should be included in the release source tree and compiled by
-  the supplied Makefile.
-
-GPU acceleration is not used.
+- Body-fitted shock fitting for two-and-a-half-dimensional and fully
+  three-dimensional structured grids.
+- Steady and time-accurate nonlinear Navier-Stokes calculations.
+- Fast- and slow-acoustic forcing for receptivity studies.
+- AD-generated LNS evolution of the coupled flow, grid, and shock-motion
+  system.
+- Fifth-order upwind inviscid discretization and sixth-order central viscous
+  discretization.
+- Explicit Runge-Kutta and implicit solver paths.
+- MPI decomposition in the streamwise and circumferential directions.
+- Distributed VTK output for ParaView.
 
 ## Repository Layout
 
-The repository uses the following top-level layout:
-
 ```text
 LASTFit/
+  src/                 Fortran source and Makefile
+  src/AutoDiff/        AD support files for shock acceleration
+  example/             release cases and representative data
+  CITATION.cff         software citation metadata
+  CHANGELOG.md         release history
+  LICENSE              BSD-3-Clause license
+  VERSION              release version
+```
+
+Each case under `example/` uses the following public layout:
+
+```text
+case_name/
+  Config.cfg
+  grid/
+  restart/
+  output/
   README.md
-  src/                 Fortran source files
-  src/AutoDiff/        TAPENADE-generated tangent routines
-  example/             benchmark configurations and release-data manifests
+  SHA256SUMS
 ```
 
-Each directory under `example/` has a common `Config.cfg`, `grid/`, `restart/`,
-`output/`, and `README.md` layout. The case index records which configurations
-have been checked and which binary data still require provenance verification.
+`grid/` and `output/` contain reference artifacts. The solver generates its
+grid from `Config.cfg`; it does not read the PVTS file in `grid/` as an input.
+`restart/` contains files that can be staged into a run directory when a case
+continues from a saved base flow.
 
-## Compiling
+## Requirements
 
-Load the compiler and MPI environment first. For Intel oneAPI, this is usually:
+- A POSIX-like Linux or macOS environment.
+- GNU Make.
+- An MPI Fortran compiler wrapper such as `mpif90`, `mpifort`, `mpiifort`, or
+  `mpiifx`.
+- A BLAS/LAPACK implementation providing the standard double-precision LAPACK
+  interface.
+- An MPI launcher such as `mpirun` or the scheduler-specific equivalent.
+- ParaView or another VTK reader for optional visualization.
+
+TAPENADE is not required to build the release because the generated tangent
+routines are included in `src/`. It is needed only when regenerating those
+routines from modified nonlinear source.
+
+## Build
+
+The default build uses an MPI-enabled GNU Fortran wrapper and system
+BLAS/LAPACK:
 
 ```bash
-source /opt/intel/oneapi/setvars.sh
+make -C src
 ```
 
-Then build the executable:
+The executable is written to `src/SFSolver`. Compiler and library settings can
+be overridden without editing the Makefile. For example, an Intel oneAPI build
+can be requested with:
 
 ```bash
-make clean
-make
+make -C src \
+  FC=mpiifx \
+  FFLAGS="-O3 -cpp -heap-arrays" \
+  LIBS="-qmkl"
 ```
 
-The released `Makefile` should document the selected compiler wrapper,
-optimization flags, MPI settings, and BLAS/LAPACK or MKL linkage. If TAPENADE
-tangent files are regenerated, rebuild the corresponding generated Fortran
-objects before linking the LNS executable.
-
-## Running a Case
-
-Runtime options are read from a Fortran namelist input file. A typical MPI run
-has the form:
+To remove compiler products while retaining generated solver data:
 
 ```bash
-mpirun -np <nproc> ./LASTFit < case.nml
+make -C src clean
 ```
 
-or, if the executable reads the case file name from the command line:
+`make -C src clean-output` also empties the runtime output directories under
+`src/` and should be used only when those files are no longer needed.
+
+## Run
+
+`SFSolver` reads `Config.cfg` from its current working directory. It also uses
+fixed relative directory names, so each calculation should run in an isolated
+directory containing:
+
+```text
+run-directory/
+  Config.cfg
+  SFSolver
+  INIT/
+  CheckFiles/
+  JACO/
+  RESU/
+  RESU_STEADY/
+  LNSResults/
+  Pert/
+```
+
+The MPI process count must equal `npx0 * npz0` in `Config.cfg`. The following
+example stages the circular-cylinder case, whose configuration continues from
+an eight-rank restart:
 
 ```bash
-mpirun -np <nproc> ./LASTFit case.nml
+make -C src
+
+case_dir="$PWD/example/circular_cylinder"
+run_dir="$PWD/run/circular_cylinder"
+
+mkdir -p "$run_dir"/{INIT,CheckFiles,JACO,RESU,RESU_STEADY,LNSResults,Pert}
+cp src/SFSolver "$run_dir/"
+cp "$case_dir/Config.cfg" "$run_dir/"
+cp "$case_dir"/restart/* "$run_dir/RESU/"
+
+cd "$run_dir"
+mpirun -np 8 ./SFSolver
 ```
 
-Replace `LASTFit`, `<nproc>`, and `case.nml` with the executable name, processor
-count, and case-control file used in the released version.
+For an LNS case, copy its base-flow restart into `RESU_STEADY/` instead of
+`RESU/`. A new calculation with `IF_Continue_Calculate=0` does not require a
+flow restart. Consult the case README before staging a run.
 
-## Input File
+## Runtime Outputs
 
-Each case should define the numerical configuration through namelist entries,
-including:
+Depending on the selected analysis mode, a calculation writes to:
 
-- Geometry or model type.
-- Analysis type: steady base flow, nonlinear unsteady shock-fitting, or LNS
-  disturbance calculation.
-- Grid dimensions and MPI partition.
-- Freestream Mach number, Reynolds number, Prandtl number, wall temperature,
-  and gas parameters.
-- Wall condition: isothermal or adiabatic.
-- Time-step, final time, restart, and residual-control settings.
-- Spatial scheme and temporal advancement method.
-- Acoustic-disturbance amplitude, frequency, incidence direction, and phase.
-- Output interval and selected field/history variables.
+- `INIT/`: generated grid in distributed VTK format;
+- `JACO/`: grid metrics and Jacobian diagnostics;
+- `RESU/`: nonlinear fields and flow/shock restart files;
+- `Pert/`: nonlinear perturbation fields;
+- `LNSResults/`: linearized disturbance fields and restarts;
+- `CheckFiles/`: diagnostic slices and monitoring data.
 
-Benchmark inputs are organized under `example/`. A case is considered
-reproducible only when its configuration, grid, restart, reduced output,
-plotting command, and executable revision are tied to the same calculation.
+The `output/` directory inside each release example is a read-only reference
+snapshot, not the directory used by a live calculation.
 
-## Output Files
+## Examples
 
-LASTFit calculations may write:
+| Case | Mode | Release grid | MPI ranks | Included reference output |
+|---|---|---:|---:|---|
+| Circular cylinder | Steady nonlinear | 101 x 61 x 20 | 8 | Final distributed field |
+| Parabolic leading edge | Nonlinear acoustic | 81 x 51 x 8 | 1 | Representative unsteady field |
+| Parabolic leading edge | AD-LNS | 81 x 51 x 8 | 1 | Final representative LNS field |
+| Blunt cone, 1 degree angle of attack | Steady nonlinear | 120 x 151 x 40 | 8 | Three-dimensional field |
+| HIFiRE-5-type elliptic cone | Steady and nonlinear acoustic | Multiple, documented in case README | 1-192 | Steady field and compact wall-harmonic field |
 
-- Steady base-flow fields.
-- Shock height, shock velocity, and shock-acceleration histories.
-- Perturbation fields from nonlinear or linearized unsteady calculations.
-- Wall-pressure and wall-temperature histories.
-- Fourier amplitudes and phase distributions.
-- Residual histories.
-- ParaView-compatible VTK/PVTK files.
+These are release assets, not a claim that every production-grid time history
+from the manuscript is stored in Git. Large histories and full three-dimensional
+HIFiRE fields are intended for a versioned data archive.
 
-Post-processing scripts in this repository generate the validation figures used
-in the manuscript, including wall-pressure maps, wall-normal profiles,
-spectra, and harmonic amplitude/phase maps.
+## Data Integrity
 
-## Current Restrictions
+Each example has a `SHA256SUMS` file covering its configuration and numerical
+data. Verify a case from its directory with:
 
-The documented cases use:
+```bash
+sha256sum -c SHA256SUMS
+```
 
-- Perfect-gas thermodynamics.
-- Sutherland-law viscosity.
-- Structured shock-fitted grids.
-- Single-domain calculations.
-- No-slip isothermal or adiabatic wall boundary conditions.
+The PVTS headers in `output/` reference only pieces committed with the same
+case. Case READMEs document any production-grid data that are intentionally
+outside this repository.
 
-Chemical nonequilibrium, thermal nonequilibrium, real-gas effects,
-unstructured meshes, and general multi-block coupling are outside the current
-documented scope.
+## Numerical Scope
 
-## How to Cite
+Part I is limited to:
 
-If you use LASTFit, please cite the software manuscript:
+- a calorically perfect gas;
+- Sutherland-law viscosity;
+- structured, shock-fitted, single-domain grids;
+- no-slip isothermal or adiabatic walls;
+- CPU-based MPI execution.
+
+Reacting chemistry, thermal nonequilibrium, unstructured meshes, general
+multi-block coupling, and GPU acceleration are outside this release.
+
+## Citation
+
+Citation metadata are provided in `CITATION.cff`. Until the accompanying CPC
+article receives final bibliographic information, cite the software release as:
 
 ```bibtex
-@article{Zhu_LASTFit,
-  title   = {LASTFit: A Three-Dimensional High-Order Shock-Fitting Software Package for Smooth Hypersonic Base Flows and Acoustic-Forcing Unsteady Fields},
+@software{lastfit_part1_0_1_0,
   author  = {Zhu, Zhichao and Xi, Youcheng and Fu, Song},
-  journal = {Computer Physics Communications},
-  year    = {to appear}
+  title   = {LASTFit Part I: A Three-Dimensional Shock-Fitting Solver for
+             Perfect-Gas Hypersonic Base Flows and Receptivity},
+  year    = {2026},
+  version = {0.1.0},
+  url     = {https://github.com/zzc-thu/LASTFit}
 }
 ```
 
-Update the bibliographic information after CPC submission or publication.
-
 ## License
 
-The open-source license should be specified before public release. Add a
-`LICENSE` file and update this section accordingly.
+LASTFit Part I is distributed under the BSD-3-Clause license. See `LICENSE`.
 
-## Contact
+## Support
 
-For questions about LASTFit, please contact the authors listed in the software
-manuscript or open an issue in the public repository after release.
+Use the GitHub issue tracker for reproducible bug reports and release-data
+questions. Include the commit, compiler and MPI versions, `Config.cfg`, MPI
+rank count, and the shortest input that reproduces the problem.

@@ -1,9 +1,8 @@
-# Reduced output
+# Reference Output
 
-This directory contains `Result_00000002.pvts` and all eight VTS pieces
-referenced by it. Its stored VTK extent is 0:120, 1:151, 1:41, which differs
-from the initial-grid index range in `Config.cfg` and is preserved here exactly
-as generated.
+`Result_00000002.pvts` references all eight committed VTS pieces. The VTK
+extent uses the solver's point-index convention, including the terminal index
+in the streamwise and circumferential directions.
 
-The windward/leeward samples, reference curves, and plotting script still need
-to be tied to this exact calculation.
+Open the PVTS header in ParaView to load the complete three-dimensional field.
+Windward and leeward comparison curves are outside this solver-data directory.

@@ -1,9 +1,7 @@
-# Reduced output
+# Reference Output
 
-This directory contains `Result_00672.pvts` and its referenced VTS piece. The
-stored extent is 81 x 51 x 8 and matches `Config.cfg`.
+`Result_00672.pvts` references the committed VTS piece and stores an 81 x 51 x
+8 unsteady field consistent with the compact release configuration.
 
-This field was recovered from a duplicated legacy unsteady archive. Its grid is
-consistent with the included case, but the exact manuscript temperature-time
-histories and Fourier inputs have not yet been traced. They must be added before
-claiming complete figure reproduction.
+This snapshot is suitable for field inspection and release regression. The
+full manuscript production history and Fourier inputs are not included.

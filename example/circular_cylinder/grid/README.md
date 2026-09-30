@@ -1,4 +1,7 @@
-# Grid files
+# Reference Grid
 
-Included grid: 101 x 61 x 20. `Initial_grid.pvts` references eight distributed
-VTS pieces, consistent with `npx0=4` and `npz0=2` in `Config.cfg`.
+`Initial_grid.pvts` references all eight VTS pieces for the 101 x 61 x 20
+grid. The decomposition is 4 x 2, matching `npx0` and `npz0` in `Config.cfg`.
+
+This is a reference artifact. `SFSolver` regenerates the grid in `INIT/` when
+the case runs.

@@ -1,5 +1,7 @@
-# Restart files
+# Base-Flow Restart
 
-This directory contains the one-rank converged nonlinear base flow and fitted-
-shock restart used by the LNS solver. Disturbance restart files remain separate
-from this base-flow input.
+The one-rank flow and fitted-shock files define the converged nonlinear base
+state for the LNS calculation.
+
+Copy both files to the run directory's `RESU_STEADY/`. LNS disturbance
+restarts, when enabled, are separate files under `LNSResults/`.

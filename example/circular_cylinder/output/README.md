@@ -1,7 +1,8 @@
-# Reduced output
+# Reference Output
 
-This directory contains `Result_00000202.pvts` and all eight VTS pieces
-referenced by it. The stored extent is 101 x 61 x 20 and matches `Config.cfg`.
+`Result_00000202.pvts` references all eight committed VTS pieces. Its stored
+extent matches the 101 x 61 x 20 release case.
 
-The sampled wall-pressure comparison data and plotting script are not yet
-included.
+Open the PVTS header in ParaView to load the distributed field. This snapshot
+is retained for release inspection and checksum-based regression; literature
+comparison curves are outside this solver-data directory.

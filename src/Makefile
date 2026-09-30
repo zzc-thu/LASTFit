@@ -1,40 +1,12 @@
-#This is the makefile used for SF_3D
-# GNU compiler
-# Release mode
-#FC = mpif90 
-#FLFLAGS = -O2 -cpp -ffree-line-length-0 -fcray-pointer
-# DEBUG MODE
-#FC = mpif90 
-#FLFLAGS = -O0 -cpp -Wall -Wextra -pedantic -fcheck=all -fbacktrace -ffree-line-length-0 -fcray-pointer
-# Intel compiler
-## Release mode
-#FC = mpiifort 
-#FLFLAGS = -O3 -fPIC -xHost -cpp -heap-arrays -fp-model fast
-## DEBUG MODE  -DDEBUG -check all bounds
-FC = mpif90 
-FLFLAGS = -g -O0 -cpp -ffree-line-length-0 -fcray-pointer
+# LASTFit Part I build configuration.
+# Command-line assignments override these defaults, for example:
+#   make FC=mpiifort FFLAGS="-O3 -cpp -heap-arrays" LIBS="-qmkl"
 
-# LAPACK library settings
-
-LIBS = -L/Users/xiyoucheng/petsc-3.24.1/arch-darwin-c-opt-complex/lib -lflapack -lfblas
-
-#SYSNAME := $(shell uname -s)
-#ifeq ($(SYSNAME), Darwin)
-  #LIBS = -L./LAPACK/lapack-3.12.1/LIB_OSX -llapack -ltmglib -lrefblas
-  # $(MKLROOT)/lib/libmkl_blas95_lp64.a
-  # $(MKLROOT)/lib/libmkl_lapack95_lp64.a
-#  LIBS = -L$(MKLROOT)/lib -lmkl_blas95_lp64 -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_intel_thread \
-#	-lmkl_core -liomp5 -lpthread -lstdc++ 
-#endif
-
-#ifeq ($(SYSNAME), Linux)
-#  LIBS = -L./LAPACK/lapack-3.12.1/LIB_LINUX -llapack -ltmglib -lrefblas 
-#endif
-
-# MKL library for Intel compiler, you can used it for better performance maybe
-#MKLLIBS = -L$(MKLROOT)/lib -lmkl_blas95_lp64 -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_intel_thread \
-#	-lmkl_core -liomp5 -lpthread -lstdc++ 
-#if you are using AMD CPU, you can use the AOCL library for better performance
+FC = mpif90
+FFLAGS = -O3 -cpp -ffree-line-length-0 -fcray-pointer
+FLFLAGS = $(FFLAGS)
+LDFLAGS =
+LIBS = -llapack -lblas
 
 
 OBJS = util.o\
@@ -62,6 +34,8 @@ OBJS = util.o\
 
 PROGRAM = SFSolver
 
+.PHONY: all create_dirs clean clean-output
+
 all: create_dirs $(PROGRAM)
 
 create_dirs:
@@ -69,6 +43,7 @@ create_dirs:
 	mkdir -p CheckFiles
 	mkdir -p JACO
 	mkdir -p RESU
+	mkdir -p RESU_STEADY
 	mkdir -p LNSResults
 	mkdir -p Pert
 
@@ -77,7 +52,7 @@ $(PROGRAM): Module_Constant.o Module_CFD.o Module_Parallel.o \
 			Module_SFitting.o Module_RK4.o Module_DPLUR.o \
 			Module_MultiGrid.o Module_Monitor.o Module_FD_1st.o \
 			Module_Krylov.o Module_Griddistributions.o Module_LNS.o $(OBJS)
-	$(FC) $(FLFLAGS) -o $(PROGRAM) $^ $(LIBS)
+	$(FC) $(LDFLAGS) -o $(PROGRAM) $^ $(LIBS)
 
 Module_Constant.o: Module_Constant.f90
 	$(FC) $(FLFLAGS) -c Module_Constant.f90
@@ -86,7 +61,7 @@ Module_CFD.o: Module_CFD.f90 Module_Constant.o
 	$(FC) $(FLFLAGS) -c Module_CFD.f90
 
 Module_Parallel.o: Module_Parallel.f90 Module_Constant.o Module_CFD.o
-	$(FC) $(FLFLAGS) -c Module_Parallel.f90	
+	$(FC) $(FLFLAGS) -c Module_Parallel.f90
 
 Module_FD_5th.o: Module_FD_5th.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
 	$(FC) $(FLFLAGS) -c Module_FD_5th.f90
@@ -115,7 +90,7 @@ Module_RK4.o: Module_RK4.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
 Module_DPLUR.o: Module_DPLUR.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
 	$(FC) $(FLFLAGS) -c Module_DPLUR.f90 $(LIBS)
 
-Module_MultiGrid.o: Module_MultiGrid.f90 Module_Constant.o Module_CFD.o Module_Parallel.o	
+Module_MultiGrid.o: Module_MultiGrid.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
 	$(FC) $(FLFLAGS) -c Module_MultiGrid.f90
 
 Module_FD_1st.o: Module_FD_1st.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
@@ -192,7 +167,7 @@ CompleteFlux_D_mpi.o: CompleteFlux_D_mpi.f90 Module_Constant.o Module_Parallel.o
 
 LNS_shockBC_d.o: LNS_shockBC_d.f90 Module_Parallel.o
 	$(FC) $(FLFLAGS) -c LNS_shockBC_d.f90
-	
+
 #TestCompleteFlux.o: TestCompleteFlux.f90 Module_Constant.o Module_CFD.o CompleteFlux_D_mpi.o
 #	$(FC) $(FLFLAGS) -c TestCompleteFlux.f90
 
@@ -201,4 +176,7 @@ Module_DPLUR.o Module_Krylov.o Module_Monitor.o Module_LNS.o
 	$(FC) $(FLFLAGS) -c main.f90
 
 clean:
-	rm -f *.o *.mod $(PROGRAM) INIT/* CheckFiles/* JACO/* 
+	rm -f *.o *.mod $(PROGRAM)
+
+clean-output:
+	rm -f INIT/* CheckFiles/* JACO/* RESU/* RESU_STEADY/* LNSResults/* Pert/*
