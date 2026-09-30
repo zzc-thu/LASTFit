@@ -69,24 +69,19 @@ GPU acceleration is not used.
 
 ## Repository Layout
 
-A release source tree is expected to use a layout similar to:
+The repository uses the following top-level layout:
 
 ```text
 LASTFit/
   README.md
-  LICENSE
-  Makefile
   src/                 Fortran source files
-  src_tapenade/        TAPENADE-generated tangent routines
-  cases/               benchmark namelist files and grids
-  scripts/             plotting and post-processing scripts
-  Figure/              manuscript and README figures
-  doc/                 manuscript or additional documentation
+  src/AutoDiff/        TAPENADE-generated tangent routines
+  example/             benchmark configurations and release-data manifests
 ```
 
-This working directory currently contains the CPC manuscript, validation
-figures, and post-processing scripts. Before public release, add the solver
-source tree, example input files, build files, and license information.
+Each directory under `example/` has a common `Config.cfg`, `grid/`, `restart/`,
+`output/`, and `README.md` layout. The case index records which configurations
+have been checked and which binary data still require provenance verification.
 
 ## Compiling
 
@@ -143,8 +138,9 @@ including:
 - Acoustic-disturbance amplitude, frequency, incidence direction, and phase.
 - Output interval and selected field/history variables.
 
-Benchmark input files should be placed under `cases/` in the public release so
-that the manuscript figures can be reproduced.
+Benchmark inputs are organized under `example/`. A case is considered
+reproducible only when its configuration, grid, restart, reduced output,
+plotting command, and executable revision are tied to the same calculation.
 
 ## Output Files
 
