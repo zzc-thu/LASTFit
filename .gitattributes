@@ -12,7 +12,6 @@
 LICENSE text eol=lf
 Makefile text eol=lf
 SHA256SUMS text eol=lf
-VERSION text eol=lf
 *.vts binary
 *.flowsfg binary
 *.shksfg binary

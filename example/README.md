@@ -43,8 +43,8 @@ cp src/SFSolver run/
 cp example/<case>/Config.cfg run/
 ```
 
-Use `npx0 * npz0` MPI processes. The main README and each case README provide
-the exact command and restart location.
+Use `npx0 * npz0` MPI processes. The [usage guide](../docs/usage.md#run) and
+each case README provide the exact command and restart location.
 
 ## Integrity and Scope
 
