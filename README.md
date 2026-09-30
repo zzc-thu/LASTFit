@@ -1,5 +1,17 @@
 # LASTFit Part I
 
+```text
+ _        _    ____ _____ _____ _ _
+| |      / \  / ___|_   _|  ___(_) |_
+| |     / _ \ \___ \ | | | |_  | | __|
+| |___ / ___ \ ___) || | |  _| | | |_
+|_____/_/   \_\____/ |_| |_|   |_|\__|
+
+Version 0.1.0
+LAST Group, Tsinghua University
+Developed by Zhichao Zhu & Youcheng Xi
+```
+
 An MPI-parallel, three-dimensional shock-fitting solver for perfect-gas
 hypersonic base flows and receptivity.
 
