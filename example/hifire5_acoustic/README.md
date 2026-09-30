@@ -27,11 +27,11 @@ of the historical executable (`ModelType=2`), which differs from the current
 release configuration; retain it as provenance unless compatibility with a
 new executable has been tested.
 
-`output/manuscript_fine/` now contains the complete wall first-harmonic field,
-time-domain diagnostics, late-periodic amplitude and phase products, and the
-E-2/E-3/E-4 amplitude and spectral comparisons used to check the frequency
-normalization. The corresponding scripts are in `postprocess/` and no longer
-contain machine-specific absolute paths.
+`output/manuscript_fine/wall_harmonic/` contains the complete wall
+first-harmonic field used by the manuscript HIFiRE discussion. Additional
+post-processing figures, CSV files, modal-analysis products, and analysis
+scripts are intentionally excluded from the example so that it follows the
+standard `Config.cfg`, `grid/`, `restart/`, `output/`, and `README.md` layout.
 
 The full fine-grid base-flow field, one complete E-4 perturbation snapshot,
 and full three-dimensional harmonic field were verified in the raw archive,
