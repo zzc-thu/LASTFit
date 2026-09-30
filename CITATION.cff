@@ -1,9 +1,8 @@
 cff-version: 1.2.0
-message: "If you use LASTFit Part I, please cite this software release."
+message: "If you use LASTFit Part I, cite this software and record the exact repository commit."
 type: software
 title: "LASTFit Part I: A Three-Dimensional Shock-Fitting Solver for Perfect-Gas Hypersonic Base Flows and Receptivity"
 version: 0.1.0
-date-released: 2026-09-30
 repository-code: "https://github.com/zzc-thu/LASTFit"
 license: BSD-3-Clause
 authors:

@@ -1,10 +1,12 @@
 # Reference Grids
 
-- `unsteady/` contains a complete four-piece 90 x 81 x 160 reference grid for
-  `Config.cfg`.
-- `steady/` contains the one-piece 90 x 41 x 40 reference grid for
-  `Config_steady.cfg`.
+[Case guide](../README.md)
 
-These PVTS datasets are generated reference artifacts, not runtime inputs. No
-160 x 151 x 160 grid is committed, and the compact grids must not be combined
-with `Config_E4_fine.cfg`.
+| Dataset | Configuration | Grid | VTS pieces |
+|---|---|---:|---:|
+| [Unsteady grid](unsteady/Initial_grid.pvts) | `Config.cfg` | 90 x 81 x 160 | 4 |
+| [Steady grid](steady/Initial_grid.pvts) | `Config_steady.cfg` | 90 x 41 x 40 | 1 |
+
+These files are reference output, not runtime mesh inputs. The production
+160 x 151 x 160 grid is not distributed here. Neither compact grid is
+compatible with the production configuration or 192-rank restart.

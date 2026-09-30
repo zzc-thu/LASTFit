@@ -1,9 +1,11 @@
 # Restart Data
 
-`unsteady/` contains four flow files and four fitted-shock files matching the
-90 x 81 x 160, four-rank compact setup.
+[Case guide](../README.md)
 
-To continue the compact case, copy these files to `RESU/` and set
-`IF_Continue_Calculate=1`. The 192-rank restart associated with
-`Config_E4_fine.cfg` is not stored in Git and must not be replaced with these
-four-rank files.
+`unsteady/` contains four flow/shock file pairs for the 90 x 81 x 160
+compact acoustic setup. Copy `*.flowsfg` and `*.shksfg` into the run's
+`RESU/` directory and enable `IF_Continue_Calculate=1` for continuation.
+
+The default configuration starts a new calculation. The separate 192-rank
+production restart is not distributed here; the four-rank checkpoint cannot
+replace it. Restart files use compiler-dependent Fortran unformatted records.

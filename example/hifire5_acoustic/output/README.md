@@ -1,12 +1,16 @@
 # Reference Output
 
-`steady/` contains `Result_00000000.pvts` and its VTS piece from the compact
-steady calculation.
+[Case guide](../README.md)
 
-`manuscript_fine/wall_harmonic/` contains
-`Harmonic_f0_666p67_Wall_3D.pvts` and all 192 referenced VTS pieces. The field
-stores the pressure-harmonic amplitude, phase, real part, and imaginary part at
-`f0 = 666.666666667`.
+| Dataset | PVTS header | Contents |
+|---|---|---|
+| Compact steady field | [Result_00000000.pvts](steady/Result_00000000.pvts) | One VTS piece |
+| Production wall harmonic | [Harmonic_f0_666p67_Wall_3D.pvts](manuscript_fine/wall_harmonic/Harmonic_f0_666p67_Wall_3D.pvts) | All 192 referenced VTS pieces |
 
-Only this compact manuscript field is retained in Git. Full three-dimensional
-base-flow, perturbation, and harmonic datasets remain external release data.
+The wall-harmonic dataset stores pressure-harmonic amplitude, phase, real part,
+and imaginary part at `f0=666.666666667`. Open each PVTS header with its
+referenced pieces at their relative paths.
+
+Full production-grid base flows, perturbation histories, and three-dimensional
+harmonic volumes are not distributed in Git. The wall field supports inspection
+of amplitude and phase maps, not reconstruction of the full time series.

@@ -1,6 +1,9 @@
 # Reference Grid
 
-`Initial_grid.pvts` and its VTS piece define the 81 x 51 x 8 compact grid used
-by the included AD-LNS example.
+[Case guide](../README.md)
 
-The file is a reference artifact; the solver regenerates the grid in `INIT/`.
+Open [Initial_grid.pvts](Initial_grid.pvts) with its one referenced VTS
+piece to inspect the 81 x 51 x 8 grid. The MPI decomposition is 1 x 1.
+
+These files are reference output, not runtime mesh inputs. The solver generates
+its grid from the configuration and writes live grids to `INIT/`.

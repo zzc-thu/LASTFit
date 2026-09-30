@@ -1,47 +1,59 @@
 # Circular Cylinder
 
-This case exercises steady viscous shock fitting for Mach 5.73 flow over a
-circular cylinder. The solution is spanwise uniform and periodic, while the
-three-dimensional storage, metric, MPI, boundary-condition, and output paths
-remain active.
+[Case index](../README.md) | [Usage guide](../../docs/usage.md)
+
+Steady viscous shock fitting for Mach 5.73 flow over a circular cylinder.
+The solution is spanwise uniform and periodic; three-dimensional grid and MPI
+operations remain active.
 
 ## Configuration
 
 | Parameter | Value |
-|---|---:|
-| Analysis mode | Steady nonlinear Navier-Stokes |
+|---|---|
+| Analysis | Steady nonlinear Navier-Stokes |
 | Grid | 101 x 61 x 20 |
 | MPI decomposition | 4 x 2 (8 ranks) |
 | Mach number | 5.73 |
-| Reynolds number | 2050 |
-| Wall condition | Isothermal |
-| Continuation | Enabled |
+| Reynolds parameter (`Re_Ref`) | 2050 |
+| Wall | Isothermal |
+| Nonlinear continuation | Enabled |
 
 ## Included Data
 
-- `Config.cfg`: runtime namelist.
-- `grid/`: complete eight-piece reference grid.
-- `restart/`: eight flow files and eight fitted-shock files.
-- `output/`: complete eight-piece final VTK field.
-- `SHA256SUMS`: checksums for all configuration and numerical files.
+- [Configuration](Config.cfg): runtime namelist.
+- [Grid](grid/): eight-piece reference grid.
+- [Restart](restart/): eight flow/shock file pairs.
+- [Output](output/): distributed steady field.
+- [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run
 
-Stage the restart under `RESU/`, then launch eight MPI ranks:
+Run the following Bash commands from the repository root after initializing
+the MPI/compiler environment. The source configuration remains unchanged.
 
 ```bash
-run_dir=/path/to/prepared/run
-cp restart/* "$run_dir/RESU/"
-cd "$run_dir"
-mpirun -np 8 ./SFSolver
+set -e
+make -C src
+case_dir="$PWD/example/circular_cylinder"
+run_dir="$PWD/run/circular_cylinder"
+mkdir -p "$run_dir"/{INIT,CheckFiles,JACO,RESU,RESU_STEADY,LNSResults,Pert}
+cp src/SFSolver "$run_dir/"
+cp "$case_dir/Config.cfg" "$run_dir/"
+cp "$case_dir"/restart/*.flowsfg "$case_dir"/restart/*.shksfg "$run_dir/RESU/"
+(
+  cd "$run_dir"
+  mpirun -np 8 ./SFSolver
+)
 ```
 
-The executable regenerates the grid in `INIT/` and writes nonlinear fields and
-updated restart files to `RESU/`.
+The solver writes generated grids to `INIT/` and nonlinear fields and restart
+data to `RESU/`.
 
 ## Data Scope
 
-The grid dimensions match the circular-cylinder case described in the
-manuscript. The repository includes the solver field used for release
-inspection; digitized literature curves and publication plotting files are not
-part of this solver example.
+The grid dimensions match the manuscript cylinder benchmark. Digitized
+literature curves and figure-generation files are not distributed in this case.
+
+Iteration limits are research-run settings, not a short runtime guarantee.
+See the [verification status](../../docs/verification.md) for checks performed
+and remaining numerical validation.

@@ -1,52 +1,100 @@
-# LASTFit Part I: Usage Guide
+# Build and Execution
 
-[Repository overview](../README.md) | [Example cases](../example/README.md)
+[Overview](../README.md) | [Examples](../example/README.md) | [Verification](verification.md)
 
-Three-dimensional MPI shock fitting for perfect-gas hypersonic base flows and
-receptivity calculations.
+## Requirements
 
-LASTFit advances the flow field together with a fitted bow-shock boundary. The
-post-shock domain therefore remains smooth and can be discretized with
-high-order finite differences without representing the shock as a smeared
-capturing layer. Part I integrates steady and nonlinear unsteady Navier-Stokes
-calculations with an automatic-differentiation-generated linearized
-Navier-Stokes (LNS) solver in the same moving-shock framework.
+The documented target is Linux with GNU Make, an MPI Fortran compiler wrapper,
+an MPI launcher, and external BLAS/LAPACK. ParaView is optional for inspecting
+VTK output. Generated tangent routines are included, so TAPENADE is not needed
+to build or run the LNS solver.
 
-The current research release is **v0.1.0**. It contains the perfect-gas solver,
-source-generated grids, MPI decomposition, representative validation data, and
-compact examples. Reacting five-species and eleven-species models and
-multigrid extensions are planned for Part II and are not included here.
+The commands below use Bash and start from the repository root. Compiler
+commands are configuration examples, not a claim of successful testing on
+every toolchain; see the [verification status](verification.md).
 
-## Capabilities
+## Build
 
-- Body-fitted shock fitting for two-and-a-half-dimensional and fully
-  three-dimensional structured grids.
-- Steady and time-accurate nonlinear Navier-Stokes calculations.
-- Fast- and slow-acoustic forcing for receptivity studies.
-- AD-generated LNS evolution of the coupled flow, grid, and shock-motion
-  system.
-- Fifth-order upwind inviscid discretization and sixth-order central viscous
-  discretization.
-- Explicit Runge-Kutta and implicit solver paths.
-- MPI decomposition in the streamwise and circumferential directions.
-- Distributed VTK output for ParaView.
+The default Makefile uses `mpif90` and links `-llapack -lblas`:
 
-## Repository Layout
-
-```text
-LASTFit/
-  src/                 Fortran source and Makefile
-  src/AutoDiff/        AD support files for shock acceleration
-  example/             release cases and representative data
-  CITATION.cff         software citation metadata
-  docs/                usage guide and release history
-  LICENSE              BSD-3-Clause license
+```bash
+make -C src
 ```
 
-Each case under `example/` uses the following public layout:
+For another GNU MPI wrapper:
+
+```bash
+make -C src clean
+make -C src FC=mpifort
+```
+
+For Intel oneAPI, initialize the compiler/MPI environment first, then use:
+
+```bash
+make -C src clean
+make -C src FC=mpiifx FFLAGS="-O3 -cpp -heap-arrays" LIBS="-qmkl"
+```
+
+The executable is `src/SFSolver`. Use a serial Make invocation; the documented
+build procedure does not assume that all Fortran module dependencies support
+`make -j`. See the [source map](../src/README.md) for compilation units.
+
+`make -C src clean` removes compiler products, not numerical output.
+`make -C src clean-output` deletes files from the runtime directories under
+`src/`; it is a separate, destructive cleanup operation.
+
+## Run
+
+`SFSolver` reads `Config.cfg` from its working directory. Run each case in a
+separate directory and retain the repository data as reference files.
+
+For the circular-cylinder continuation:
+
+```bash
+set -e
+make -C src
+case_dir="$PWD/example/circular_cylinder"
+run_dir="$PWD/run/circular_cylinder"
+mkdir -p "$run_dir"/{INIT,CheckFiles,JACO,RESU,RESU_STEADY,LNSResults,Pert}
+cp src/SFSolver "$run_dir/"
+cp "$case_dir/Config.cfg" "$run_dir/"
+cp "$case_dir"/restart/*.flowsfg "$case_dir"/restart/*.shksfg "$run_dir/RESU/"
+(
+  cd "$run_dir"
+  mpirun -np 8 ./SFSolver
+)
+```
+
+Each [case README](../example/README.md#case-index) gives a complete staging
+command for its own configuration. The MPI process count is `npx0 * npz0`.
+On a cluster, replace `mpirun` with the site-supported launcher.
+
+### Restart Rules
+
+| Analysis | Configuration control | Data directory in the run |
+|---|---|---|
+| Nonlinear fresh start | `IF_Continue_Calculate=0` | No nonlinear restart required |
+| Nonlinear continuation | `IF_Continue_Calculate=1` | All rank-matched flow/shock files in `RESU/` |
+| LNS with new perturbations | `AnalysisType=3`, `IF_Continue_LNS=0` | Nonlinear base flow in `RESU_STEADY/` |
+| LNS continuation | `IF_Continue_LNS=1` | Base flow plus compatible perturbation restart in `LNSResults/` |
+
+LNS base-flow data are required even when perturbation continuation is disabled.
+A separate `IF_Continue_Calculate=1` also activates the nonlinear initialization
+restart path. The included LNS configuration sets that control to zero.
+
+Do not change grid dimensions or MPI partitioning when using an existing
+restart. Restart files use Fortran unformatted records; portability between
+compiler/runtime environments has not been established.
+
+The supplied iteration limits are research-run controls, not short test
+budgets. A shortened run requires changing the time-step limit and output
+cadence in a staged copy of `Config.cfg`; it cannot establish convergence or
+reproduce a manuscript spectrum. No few-minute runtime is asserted.
+
+## Data Layout
 
 ```text
-case_name/
+case/
   Config.cfg
   grid/
   restart/
@@ -55,173 +103,41 @@ case_name/
   SHA256SUMS
 ```
 
-`grid/` and `output/` contain reference artifacts. The solver generates its
-grid from `Config.cfg`; it does not read the PVTS file in `grid/` as an input.
-`restart/` contains files that can be staged into a run directory when a case
-continues from a saved base flow.
+The solver generates its grid from `Config.cfg`. The PVTS files in `grid/`
+are reference artifacts, not runtime mesh inputs. The case `output/` directory
+stores representative fields and is not a live output destination.
 
-## Requirements
+| Runtime directory | Contents |
+|---|---|
+| `INIT/` | Generated grids |
+| `CheckFiles/` | Diagnostics and monitoring data |
+| `JACO/` | Grid metrics and Jacobian diagnostics |
+| `RESU/` | Nonlinear fields and flow/shock restarts |
+| `RESU_STEADY/` | Input base flow for LNS |
+| `LNSResults/` | Linearized fields and perturbation restarts |
+| `Pert/` | Nonlinear perturbation fields |
 
-- A POSIX-like Linux or macOS environment.
-- GNU Make.
-- An MPI Fortran compiler wrapper such as `mpif90`, `mpifort`, `mpiifort`, or
-  `mpiifx`.
-- A BLAS/LAPACK implementation providing the standard double-precision LAPACK
-  interface.
-- An MPI launcher such as `mpirun` or the scheduler-specific equivalent.
-- ParaView or another VTK reader for optional visualization.
+## Inspect and Verify
 
-TAPENADE is not required to build the release because the generated tangent
-routines are included in `src/`. It is needed only when regenerating those
-routines from modified nonlinear source.
+Open a `.pvts` header in ParaView with all referenced `.vts` pieces present
+at their relative paths. Individual pieces contain only one MPI subdomain.
 
-## Build
-
-The default build uses an MPI-enabled GNU Fortran wrapper and system
-BLAS/LAPACK:
+Verify the included configuration and numerical files from a case directory:
 
 ```bash
-make -C src
+(cd example/circular_cylinder && sha256sum -c SHA256SUMS)
 ```
 
-The executable is written to `src/SFSolver`. Compiler and library settings can
-be overridden without editing the Makefile. For example, an Intel oneAPI build
-can be requested with:
+Documentation is excluded from these manifests. Matching checksums confirm
+file integrity, not numerical correctness.
 
-```bash
-make -C src \
-  FC=mpiifx \
-  FFLAGS="-O3 -cpp -heap-arrays" \
-  LIBS="-qmkl"
-```
+## Scope and Citation
 
-To remove compiler products while retaining generated solver data:
+Part I uses a calorically perfect gas, Sutherland-law viscosity, structured
+shock-fitted grids, no-slip isothermal or adiabatic walls, and CPU-based MPI.
+Reacting chemistry, thermal nonequilibrium, general multi-block coupling,
+unstructured meshes, and GPU execution are outside this snapshot.
 
-```bash
-make -C src clean
-```
-
-`make -C src clean-output` also empties the runtime output directories under
-`src/` and should be used only when those files are no longer needed.
-
-## Run
-
-`SFSolver` reads `Config.cfg` from its current working directory. It also uses
-fixed relative directory names, so each calculation should run in an isolated
-directory containing:
-
-```text
-run-directory/
-  Config.cfg
-  SFSolver
-  INIT/
-  CheckFiles/
-  JACO/
-  RESU/
-  RESU_STEADY/
-  LNSResults/
-  Pert/
-```
-
-The MPI process count must equal `npx0 * npz0` in `Config.cfg`. The following
-example stages the circular-cylinder case, whose configuration continues from
-an eight-rank restart:
-
-```bash
-make -C src
-
-case_dir="$PWD/example/circular_cylinder"
-run_dir="$PWD/run/circular_cylinder"
-
-mkdir -p "$run_dir"/{INIT,CheckFiles,JACO,RESU,RESU_STEADY,LNSResults,Pert}
-cp src/SFSolver "$run_dir/"
-cp "$case_dir/Config.cfg" "$run_dir/"
-cp "$case_dir"/restart/* "$run_dir/RESU/"
-
-cd "$run_dir"
-mpirun -np 8 ./SFSolver
-```
-
-For an LNS case, copy its base-flow restart into `RESU_STEADY/` instead of
-`RESU/`. A new calculation with `IF_Continue_Calculate=0` does not require a
-flow restart. Consult the case README before staging a run.
-
-## Runtime Outputs
-
-Depending on the selected analysis mode, a calculation writes to:
-
-- `INIT/`: generated grid in distributed VTK format;
-- `JACO/`: grid metrics and Jacobian diagnostics;
-- `RESU/`: nonlinear fields and flow/shock restart files;
-- `Pert/`: nonlinear perturbation fields;
-- `LNSResults/`: linearized disturbance fields and restarts;
-- `CheckFiles/`: diagnostic slices and monitoring data.
-
-The `output/` directory inside each release example is a read-only reference
-snapshot, not the directory used by a live calculation.
-
-## Examples
-
-| Case | Mode | Release grid | MPI ranks | Included reference output |
-|---|---|---:|---:|---|
-| Circular cylinder | Steady nonlinear | 101 x 61 x 20 | 8 | Final distributed field |
-| Parabolic leading edge | Nonlinear acoustic | 81 x 51 x 8 | 1 | Representative unsteady field |
-| Parabolic leading edge | AD-LNS | 81 x 51 x 8 | 1 | Final representative LNS field |
-| Blunt cone, 1 degree angle of attack | Steady nonlinear | 120 x 151 x 40 | 8 | Three-dimensional field |
-| HIFiRE-5-type elliptic cone | Steady and nonlinear acoustic | Multiple, documented in case README | 1-192 | Steady field and compact wall-harmonic field |
-
-These are release assets, not a claim that every production-grid time history
-from the manuscript is stored in Git. Large histories and full three-dimensional
-HIFiRE fields are intended for a versioned data archive.
-
-## Data Integrity
-
-Each example has a `SHA256SUMS` file covering its configuration and numerical
-data. Verify a case from its directory with:
-
-```bash
-sha256sum -c SHA256SUMS
-```
-
-The PVTS headers in `output/` reference only pieces committed with the same
-case. Case READMEs document any production-grid data that are intentionally
-outside this repository.
-
-## Numerical Scope
-
-Part I is limited to:
-
-- a calorically perfect gas;
-- Sutherland-law viscosity;
-- structured, shock-fitted, single-domain grids;
-- no-slip isothermal or adiabatic walls;
-- CPU-based MPI execution.
-
-Reacting chemistry, thermal nonequilibrium, unstructured meshes, general
-multi-block coupling, and GPU acceleration are outside this release.
-
-## Citation
-
-Citation metadata are provided in `CITATION.cff`. Until the accompanying CPC
-article receives final bibliographic information, cite the software release as:
-
-```bibtex
-@software{lastfit_part1_0_1_0,
-  author  = {Zhu, Zhichao and Xi, Youcheng and Fu, Song},
-  title   = {LASTFit Part I: A Three-Dimensional Shock-Fitting Solver for
-             Perfect-Gas Hypersonic Base Flows and Receptivity},
-  year    = {2026},
-  version = {0.1.0},
-  url     = {https://github.com/zzc-thu/LASTFit}
-}
-```
-
-## License
-
-LASTFit Part I is distributed under the BSD-3-Clause license. See `LICENSE`.
-
-## Support
-
-Use the GitHub issue tracker for reproducible bug reports and release-data
-questions. Include the commit, compiler and MPI versions, `Config.cfg`, MPI
-rank count, and the shortest input that reproduces the problem.
+Use the [citation metadata](../CITATION.cff) and record the exact commit used.
+No archival DOI or formal release tag is assigned. Bug reports should include
+the commit, compiler/MPI versions, configuration, rank count, and relevant logs.

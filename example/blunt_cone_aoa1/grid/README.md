@@ -1,6 +1,9 @@
 # Reference Grid
 
-`Initial_grid.pvts` references all eight VTS pieces for the 120 x 151 x 40
-case. The 4 x 2 decomposition matches `Config.cfg`.
+[Case guide](../README.md)
 
-This is a reference artifact. A live run generates its own `INIT/` output.
+Open [Initial_grid.pvts](Initial_grid.pvts) with its eight referenced VTS
+pieces to inspect the 120 x 151 x 40 grid. The MPI decomposition is 4 x 2.
+
+These files are reference output, not runtime mesh inputs. The solver generates
+its grid from the configuration and writes live grids to `INIT/`.

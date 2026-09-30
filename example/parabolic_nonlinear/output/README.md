@@ -1,7 +1,10 @@
 # Reference Output
 
-`Result_00672.pvts` references the committed VTS piece and stores an 81 x 51 x
-8 unsteady field consistent with the compact release configuration.
+[Case guide](../README.md)
 
-This snapshot is suitable for field inspection and release regression. The
-full manuscript production history and Fourier inputs are not included.
+Open [Result_00672.pvts](Result_00672.pvts) in ParaView with its one referenced VTS
+piece present. The field belongs to the 81 x 51 x 8 case.
+
+This representative nonlinear unsteady field is provided for inspection and comparison. It is not
+a full time history or a numerical regression acceptance criterion. Live runs
+write to `RESU/`, not this directory.

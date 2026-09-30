@@ -1,8 +1,10 @@
 # Reference Output
 
-`Result_00000202.pvts` references all eight committed VTS pieces. Its stored
-extent matches the 101 x 61 x 20 release case.
+[Case guide](../README.md)
 
-Open the PVTS header in ParaView to load the distributed field. This snapshot
-is retained for release inspection and checksum-based regression; literature
-comparison curves are outside this solver-data directory.
+Open [Result_00000202.pvts](Result_00000202.pvts) in ParaView with its eight referenced VTS
+pieces present. The field belongs to the 101 x 61 x 20 case.
+
+This representative steady field is provided for inspection and comparison. It is not
+a full time history or a numerical regression acceptance criterion. Live runs
+write to `RESU/`, not this directory.

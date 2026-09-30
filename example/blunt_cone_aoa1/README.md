@@ -1,46 +1,60 @@
 # Blunt Cone at 1 Degree Angle of Attack
 
-This case exercises asymmetric three-dimensional steady shock fitting and the
-polar-axis treatment for Mach 6 flow over a spherical-nosed cone.
+[Case index](../README.md) | [Usage guide](../../docs/usage.md)
+
+Asymmetric three-dimensional steady shock fitting and polar-axis treatment for
+Mach 6 flow over a spherical-nosed cone.
 
 ## Configuration
 
 | Parameter | Value |
-|---|---:|
-| Analysis mode | Steady nonlinear Navier-Stokes |
+|---|---|
+| Analysis | Steady nonlinear Navier-Stokes |
 | Grid | 120 x 151 x 40 |
 | MPI decomposition | 4 x 2 (8 ranks) |
 | Mach number | 6 |
-| Reynolds number | 10000 |
+| Reynolds parameter (`Re_Ref`) | 10000 |
 | Cone half-angle | 5 degrees |
 | Angle of attack | 1 degree |
-| Continuation | Disabled |
+| Nonlinear continuation | Disabled |
 
 ## Included Data
 
-- `Config.cfg`: runtime namelist for a new steady calculation.
-- `grid/`: complete eight-piece reference grid.
-- `restart/`: matching eight-rank checkpoint retained as a reference.
-- `output/`: complete eight-piece three-dimensional VTK field.
-- `SHA256SUMS`: checksums for all configuration and numerical files.
+- [Configuration](Config.cfg): runtime namelist.
+- [Grid](grid/): eight-piece reference grid.
+- [Restart](restart/): eight flow/shock file pairs for optional continuation.
+- [Output](output/): distributed three-dimensional steady field.
+- [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run
 
-The supplied configuration starts a new calculation and therefore does not
-read the files under `restart/`:
+Run the following Bash commands from the repository root after initializing
+the MPI/compiler environment. The source configuration remains unchanged.
 
 ```bash
-run_dir=/path/to/prepared/run
-cd "$run_dir"
-mpirun -np 8 ./SFSolver
+set -e
+make -C src
+case_dir="$PWD/example/blunt_cone_aoa1"
+run_dir="$PWD/run/blunt_cone_aoa1"
+mkdir -p "$run_dir"/{INIT,CheckFiles,JACO,RESU,RESU_STEADY,LNSResults,Pert}
+cp src/SFSolver "$run_dir/"
+cp "$case_dir/Config.cfg" "$run_dir/"
+(
+  cd "$run_dir"
+  mpirun -np 8 ./SFSolver
+)
 ```
 
-To continue from the supplied checkpoint, copy `restart/*` to `RESU/` and set
-`IF_Continue_Calculate=1` in the staged `Config.cfg`.
+The default configuration starts a new calculation. For continuation, copy
+`restart/*.flowsfg` and `restart/*.shksfg` into the staged `RESU/` directory,
+then set `IF_Continue_Calculate=1` in the staged configuration.
 
 ## Data Scope
 
-The release assets form a consistent 120 x 151 x 40 case. They are separate
-from the lower-resolution grid quoted for the manuscript wall-pressure
-comparison; reference curves and plotting data for that comparison are not
-included here.
+The example grid is 120 x 151 x 40. It differs from the 30 x 101 x 40 grid
+used for the manuscript wall-pressure comparison. Literature curves and
+publication plotting data are not distributed in this case.
+
+Iteration limits are research-run settings, not a short runtime guarantee.
+See the [verification status](../../docs/verification.md) for checks performed
+and remaining numerical validation.

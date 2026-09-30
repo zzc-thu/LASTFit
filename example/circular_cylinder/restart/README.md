@@ -1,7 +1,12 @@
 # Restart Data
 
-This directory contains eight `SF_Results*.flowsfg` files and eight matching
-`SF_Results*.shksfg` files for the 4 x 2 MPI decomposition.
+[Case guide](../README.md)
 
-Because `Config.cfg` enables continuation, copy every file in this directory to
-the run directory's `RESU/` before launching eight MPI ranks.
+The `SF_Results*.flowsfg` and `SF_Results*.shksfg` files form matching
+flow/shock pairs for the 4 x 2 MPI decomposition and 101 x 61 x 20 grid.
+
+Copy only these numerical files, not this README, into the run directory's
+`RESU/`. The supplied configuration enables continuation.
+
+Restart records are compiler-dependent Fortran unformatted data. Retain the
+matching grid and MPI partition; cross-toolchain portability is not established.

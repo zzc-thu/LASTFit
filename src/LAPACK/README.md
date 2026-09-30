@@ -1,13 +1,16 @@
 # BLAS/LAPACK Dependency
 
-LASTFit does not vendor BLAS or LAPACK source or binaries. The default Makefile
-links the system libraries with `-llapack -lblas`.
+[Source map](../README.md) | [Build guide](../../docs/usage.md#build)
 
-Override `LIBS` when using another implementation, for example Intel MKL:
+No BLAS/LAPACK source or binaries are distributed in this directory. The
+default Makefile links an external implementation using `-llapack -lblas`.
+
+Set `LIBS` for the implementation installed on the target system. For Intel
+oneAPI with MKL, the documented configuration is:
 
 ```bash
-make FC=mpiifx FFLAGS="-O3 -cpp -heap-arrays" LIBS="-qmkl"
+make -C src FC=mpiifx FFLAGS="-O3 -cpp -heap-arrays" LIBS="-qmkl"
 ```
 
-Keeping the numerical library external avoids machine-specific library paths
-and allows each HPC environment to select its optimized implementation.
+Run this command from the repository root after initializing the oneAPI
+environment. Compiler examples are not a tested-platform guarantee.
