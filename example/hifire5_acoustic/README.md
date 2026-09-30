@@ -21,6 +21,8 @@ package, which reports a 160 x 151 x 160 grid. The raw E-2, E-3, and E-4
 acoustic histories and their harmonic-analysis products must be restored from
 the original data disk before this example can be marked complete.
 
-The final package should contain a matching steady restart, selected wall
-histories, first-harmonic amplitude and phase fields, spectra, and the script
-that defines the Fourier normalization and sampling window.
+`output/steady/` contains the available steady VTK field. No matching nonlinear
+acoustic VTK field is present on the currently mounted data disks. The final
+package still requires selected wall histories, first-harmonic amplitude and
+phase fields, spectra, and the script that defines the Fourier normalization
+and sampling window.

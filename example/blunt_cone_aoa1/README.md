@@ -19,5 +19,6 @@ reports 30 x 101 x 40, while the legacy PVTS file used with the plotting data
 has a different extent. These records must not be presented as one run until
 their provenance is resolved.
 
-The final release output should include one three-dimensional pressure field
-and the windward/leeward wall-pressure samples used in the comparison.
+`output/` contains one matching three-dimensional field. The windward/leeward
+wall-pressure samples and their manuscript-grid provenance still need to be
+resolved before the comparison is fully reproducible.

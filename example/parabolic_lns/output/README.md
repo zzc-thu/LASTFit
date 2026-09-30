@@ -1,7 +1,8 @@
 # Reduced output
 
-Add a representative LNS PVTS record with all referenced VTS pieces and the
-profiles used for the LNS/nonlinear comparison. The full 71-record sequence may
-be stored in the versioned data archive.
+This directory contains `LNSResults_00071.pvts` and its referenced VTS piece.
+The stored extent is 81 x 51 x 8 and matches `Config.cfg`. This is the final
+record of the available 71-record LNS sequence.
 
-Status: release subset and plotting script pending.
+The full time sequence and the profile-extraction script remain candidates for
+the versioned data archive.

@@ -20,6 +20,7 @@ has been identified, but the full time sequence is not committed here. The
 manuscript currently states a 181 x 161 x 8 grid, so the release data and
 manuscript description must be reconciled.
 
-A complete reproduction package must also include the matching nonlinear
-time histories and a relative-path script that regenerates the LNS/nonlinear
-amplitude and phase comparisons.
+`output/` contains the final available LNS VTK record. A complete figure
+reproduction package must also include the matching nonlinear time histories
+and a relative-path script that regenerates the LNS/nonlinear amplitude and
+phase comparisons.

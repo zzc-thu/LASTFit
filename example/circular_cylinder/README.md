@@ -22,5 +22,6 @@ Do not use perturbation or LNS files found beside the legacy calculation:
 representative files in those directories belong to a parabolic-leading-edge
 grid.
 
-The remaining reduced release output should contain the wall-pressure samples
-and the temperature field used for the validation figure.
+`output/` contains the final parallel VTK field, including pressure and
+temperature. The digitized wall-pressure comparison data and plotting script
+remain to be added.

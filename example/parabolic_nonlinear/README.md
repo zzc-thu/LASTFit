@@ -19,6 +19,7 @@ manuscript currently reports a 181 x 161 x 8 grid, while available legacy
 nonlinear perturbation output uses another grid. Do not combine those files
 until their provenance has been established.
 
-The completed release case must include a matching initial grid, base-flow
-restart, perturbation snapshots, wall-normal time histories, the Fourier
-extraction script, and the sampling-window metadata.
+`output/` contains a representative final unsteady field with the same
+81 x 51 x 8 extent as the included configuration. The completed manuscript
+reproduction case must additionally include the wall-normal time histories,
+Fourier extraction script, and sampling-window metadata.
