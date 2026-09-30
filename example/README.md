@@ -22,11 +22,11 @@ than committed repeatedly to the source repository.
 
 | Directory | Capability | Configuration in this repository | Release status |
 |---|---|---|---|
-| `circular_cylinder` | Steady shock fitting and three-dimensional infrastructure | 101 x 61 x 20 | Configuration checked; binary data pending |
-| `parabolic_nonlinear` | Nonlinear fast-acoustic forcing | 81 x 51 x 8 | Provisional configuration; manuscript-grid data pending |
-| `parabolic_lns` | AD-generated LNS disturbance evolution | 81 x 51 x 8 | Configuration checked; reduced LNS data pending |
-| `blunt_cone_aoa1` | Asymmetric three-dimensional base flow and polar treatment | 120 x 151 x 40 | Provisional configuration; manuscript-grid provenance pending |
-| `hifire5_acoustic` | Non-axisymmetric steady and nonlinear acoustic response | 90 x 81 x 160 unsteady; 90 x 41 x 40 steady | Provisional configurations; final acoustic dataset pending |
+| `circular_cylinder` | Steady shock fitting and three-dimensional infrastructure | 101 x 61 x 20 | Configuration, grid, and eight-rank restart included; reduced output pending |
+| `parabolic_nonlinear` | Nonlinear fast-acoustic forcing | 81 x 51 x 8 | Configuration, grid, and one-rank restart included; manuscript-grid output pending |
+| `parabolic_lns` | AD-generated LNS disturbance evolution | 81 x 51 x 8 | Configuration, grid, and one-rank base-flow restart included; reduced LNS output pending |
+| `blunt_cone_aoa1` | Asymmetric three-dimensional base flow and polar treatment | 120 x 151 x 40 | Configuration, grid, and eight-rank restart included; manuscript-grid provenance pending |
+| `hifire5_acoustic` | Non-axisymmetric steady and nonlinear acoustic response | 90 x 81 x 160 unsteady; 90 x 41 x 40 steady | Both grids and four-rank unsteady restart included; final acoustic output pending |
 
 The directories are deliberately explicit about incomplete data. A case should
 be marked reproducible only after its configuration, grid, restart, executable

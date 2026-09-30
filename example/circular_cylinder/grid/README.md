@@ -1,6 +1,4 @@
 # Grid files
 
-Expected release grid: 101 x 61 x 20. Add the parallel initial-grid header and
-all piece files referenced by it. Record file checksums in the case README.
-
-Status: not yet committed.
+Included grid: 101 x 61 x 20. `Initial_grid.pvts` references eight distributed
+VTS pieces, consistent with `npx0=4` and `npz0=2` in `Config.cfg`.

@@ -1,6 +1,6 @@
 # Restart files
 
-Add a flow/shock restart pair only after its dimensions and physical parameters
-have been checked against `Config.cfg`.
-
-Status: no restart pair has yet passed this provenance check.
+This directory contains eight flow files and eight fitted-shock files from the
+120 x 151 x 40 calculation, matching the 4 x 2 MPI decomposition in
+`Config.cfg`. The stale one-rank restart found in a separate legacy directory
+was excluded because its hash matches the parabolic-leading-edge LNS restart.

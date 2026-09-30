@@ -13,11 +13,13 @@ steady and nonlinear acoustic-forcing workflow.
 
 ## Release status
 
-These are provisional setup records rather than the final manuscript
-reproduction package. The manuscript reports a 160 x 151 x 160 grid. The raw
-E-2, E-3, and E-4 acoustic histories and their harmonic-analysis products must
-be restored from the original data disk before this example can be marked
-complete.
+The 90 x 81 x 160 unsteady grid and its four-rank base-flow restart are
+included. `Config.cfg` uses four circumferential MPI partitions to match those
+files. The one-piece 90 x 41 x 40 steady grid is also included. These remain
+provisional setup records rather than the final manuscript reproduction
+package, which reports a 160 x 151 x 160 grid. The raw E-2, E-3, and E-4
+acoustic histories and their harmonic-analysis products must be restored from
+the original data disk before this example can be marked complete.
 
 The final package should contain a matching steady restart, selected wall
 histories, first-harmonic amplitude and phase fields, spectra, and the script

@@ -1,5 +1,6 @@
 # Grid files
 
-The provisional unsteady and steady configurations currently use different
-grids. Add a grid only when it is tied to the selected final configuration and
-restart. The manuscript-grid dataset remains pending.
+`unsteady/` contains the 90 x 81 x 160 grid as one PVTS header and four VTS
+pieces. `steady/` contains the one-piece 90 x 41 x 40 grid. These correspond to
+`Config.cfg` and `Config_steady.cfg`, respectively. The manuscript-grid dataset
+remains pending.

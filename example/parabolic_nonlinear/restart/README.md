@@ -1,6 +1,4 @@
 # Restart files
 
-Add the converged parabolic-leading-edge base-flow and fitted-shock restart
-used to start the nonlinear forcing calculation.
-
-Status: provenance check pending.
+This directory contains the one-rank flow and fitted-shock restart stored with
+the nonlinear fast-acoustic configuration.

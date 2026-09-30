@@ -13,10 +13,11 @@ parabolic-leading-edge flow to a planar fast-acoustic disturbance.
 
 ## Release status
 
-This configuration is a traceable local calculation input, but it is not yet a
-manuscript reproduction case. The manuscript currently reports a 181 x 161 x 8
-grid, while available legacy nonlinear perturbation output uses another grid.
-Do not combine those files until their provenance has been established.
+The configuration, one-piece parabolic grid, and matching one-rank flow/shock
+restart are included. This is not yet a manuscript reproduction case: the
+manuscript currently reports a 181 x 161 x 8 grid, while available legacy
+nonlinear perturbation output uses another grid. Do not combine those files
+until their provenance has been established.
 
 The completed release case must include a matching initial grid, base-flow
 restart, perturbation snapshots, wall-normal time histories, the Fourier

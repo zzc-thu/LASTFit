@@ -1,0 +1,6 @@
+*.cfg text eol=lf
+*.md text eol=lf
+*.pvts text eol=lf
+*.vts binary
+*.flowsfg binary
+*.shksfg binary

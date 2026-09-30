@@ -14,10 +14,11 @@ calculation.
 
 ## Release status
 
-The configuration is associated with a complete local LNS record containing 71
-parallel VTK time records and flow/shock restart data. Those binary files are
-not committed here yet. The manuscript currently states a 181 x 161 x 8 grid,
-so the release data and manuscript description must be reconciled.
+The configuration, one-piece grid, and one-rank nonlinear base-flow restart are
+included. A complete local LNS record containing 71 parallel VTK time records
+has been identified, but the full time sequence is not committed here. The
+manuscript currently states a 181 x 161 x 8 grid, so the release data and
+manuscript description must be reconciled.
 
 A complete reproduction package must also include the matching nonlinear
 time histories and a relative-path script that regenerates the LNS/nonlinear

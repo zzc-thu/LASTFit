@@ -1,6 +1,4 @@
 # Grid files
 
-The included configuration declares a 120 x 151 x 40 grid. Add only the
-matching distributed grid header and referenced pieces.
-
-Status: verified local grid exists; release copy pending.
+The included `Initial_grid.pvts` references eight VTS pieces for the
+120 x 151 x 40 grid, consistent with the 4 x 2 MPI decomposition.

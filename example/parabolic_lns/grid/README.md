@@ -1,6 +1,4 @@
 # Grid files
 
-Expected grid for the included configuration: 81 x 51 x 8. Add the initial
-grid and any metric files required when restarting the LNS calculation.
-
-Status: verified local data exist; release copy pending.
+The included `Initial_grid.pvts` and VTS piece define the 81 x 51 x 8 grid used
+by the available AD-LNS calculation.
