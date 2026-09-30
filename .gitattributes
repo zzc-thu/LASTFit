@@ -1,6 +1,12 @@
 *.cfg text eol=lf
+*.csv text eol=lf
 *.md text eol=lf
+*.m text eol=lf
 *.pvts text eol=lf
+*.py text eol=lf
+*.txt text eol=lf
+SHA256SUMS text eol=lf
 *.vts binary
 *.flowsfg binary
 *.shksfg binary
+*.png binary
