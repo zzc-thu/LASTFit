@@ -7,9 +7,9 @@
 | |___ / ___ \ ___) || | |  _| | | |_
 |_____/_/   \_\____/ |_| |_|   |_|\__|
 
-                                                           Version 0.1.0
-                                         LAST Group, Tsinghua University
-                                  Developed by Zhichao Zhu & Youcheng Xi
+                                                                                                                  Version 0.1.0
+                                                                                                LAST Group, Tsinghua University
+                                                                                         Developed by Zhichao Zhu & Youcheng Xi
 ```
 
 An MPI-parallel, three-dimensional shock-fitting solver for perfect-gas
