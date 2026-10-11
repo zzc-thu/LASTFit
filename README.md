@@ -44,24 +44,15 @@ Each case contains a configuration, reference grid, and restart or base-flow
 inputs. See the [case index](example/README.md) for data scope.
 Generated results and postprocessed datasets are not distributed in this repository.
 
-Check supplied inputs with Python 3.9+ and NumPy (not solver dependencies):
-
-```bash
-python tools/check_examples.py
-python tools/prepare_case.py parabolic_nonlinear --solver src/SFSolver --run-dir run/parabolic_check --steps 10
-```
-
-The staging tool creates a new directory, copies the required checkpoints
-and base flow, and leaves reference inputs unchanged. Run the printed MPI
-command from that directory. Input checks do not certify LNS numerical
-correctness; consult the verification status before choosing that example.
+Follow the commands in each case README to copy the configuration and required
+restart or base-flow inputs into a separate run directory and launch MPI.
+Consult the verification scope before interpreting numerical results.
 
 ## Documentation
 
 - [Build and execution](docs/usage.md)
 - [Source modules](src/README.md)
 - [Verification status](docs/verification.md)
-- [Optional utilities](tools/README.md)
 - [Citation metadata](CITATION.cff)
 
 The source version is 0.1.0. LASTFit is distributed under the

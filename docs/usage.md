@@ -101,18 +101,6 @@ New LNS metadata record the next step, time step, grid and MPI partition;
 mismatches or metadata-free legacy histories are rejected. Base flow and
 forcing parameters must also remain consistent. Keep `LNS_dt` unchanged.
 
-For automatic input checks and isolated short-run preparation:
-
-```bash
-python tools/check_examples.py
-python tools/test_check_examples.py
-python tools/prepare_case.py parabolic_nonlinear --solver src/SFSolver --run-dir run/parabolic_check --steps 10
-```
-
-Input checks and their tests require NumPy. Staging requires Python 3.9+
-only and refuses to overwrite existing run directories. A passing input
-check is not a passing LNS or convergence test.
-
 The supplied iteration limits are research-run controls, not short test
 budgets. A shortened run requires changing the time-step limit and output
 cadence in a staged copy of `Config.cfg`; it cannot establish convergence or

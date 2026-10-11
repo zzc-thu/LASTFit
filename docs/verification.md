@@ -8,7 +8,7 @@ Six configurations and 44 flow/shock input files pass sequential-record,
 record-shape, interior finite-value and density/pressure positivity checks.
 The 79 input-file checksums and reference-grid PVTS links have been verified.
 Some supplied nonlinear checkpoints contain non-finite physical exterior halos;
-these are distinguished from owned cells by the input checker.
+the reported finite-value checks distinguish these from owned cells.
 
 All 37 compilation units were built from an empty directory using Intel
 Fortran Classic 2021.11 and Intel MPI 2021.11 on Windows. The Linux Makefile
@@ -46,16 +46,6 @@ Tests use the supplied 81 x 51 x 8 parabolic base flow.
 | Forcing modes | Fast acoustic, slow acoustic, entropy and vortical modes complete ten-step LNS and nonlinear runs with finite fields |
 | Diagnostic build | Owned-cell LNS passes bounds checks and floating-point traps enabled after base-flow loading |
 | Restart guards | Missing metadata, incompatible time step/grid and non-finite histories are rejected |
-
-The optional result checker requires Python and NumPy:
-
-```bash
-python tools/check_lns_results.py run/parabolic_lns/LNSResults
-python tools/check_lns_results.py run/resumed/LNSResults --reference run/continuous/LNSResults
-```
-
-Six synthetic tests cover the input checker; five cover LNS record checks
-and comparisons. These test the utilities, not the physical accuracy of the solver.
 
 ## Validation Limits
 

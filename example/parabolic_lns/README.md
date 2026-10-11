@@ -64,9 +64,7 @@ flow and forcing parameters unchanged as well.
 The supplied base flow supports short-run LNS checks at `LNS_dt=6e-6`.
 The [verification guide](../../docs/verification.md) reports runtime,
 restart, MPI partition and amplitude-scaling tests and their limitations.
-The preparation tool requires `--allow-unverified` for diagnostic LNS runs
-because convergence and complete AD consistency validation remain incomplete.
-Saved histories can be checked with `tools/check_lns_results.py`.
+Convergence and complete AD consistency validation remain incomplete.
 Record the source commit and do not mix checkpoints from different operators.
 
 The compact grid is 81 x 51 x 8, whereas the manuscript LNS/nonlinear comparison
