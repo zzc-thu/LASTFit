@@ -673,6 +673,13 @@ use MPI_GLOBAL,   only: Parallel_Exchange_Surface, Parallel_Exchange,&
 & overlap:nz_local+overlap))
   ALLOCATE(vishhat(1:5, 1-overlap:nx_local+overlap, 1:ny_local, 1-&
 & overlap:nz_local+overlap))
+  ! The viscous mass flux and its tangent vanish identically.
+  visfhat(1,:,:,:) = 0.d0
+  visghat(1,:,:,:) = 0.d0
+  vishhat(1,:,:,:) = 0.d0
+  visfhatd(1,:,:,:) = 0.d0
+  visghatd(1,:,:,:) = 0.d0
+  vishhatd(1,:,:,:) = 0.d0
   ALLOCATE(visfhatdxid(1:5, 1-overlap:nx_local+overlap, 1:ny_local, 1-&
 & overlap:nz_local+overlap))
   ALLOCATE(visfhatdxi(1:5, 1-overlap:nx_local+overlap, 1:ny_local, 1-&

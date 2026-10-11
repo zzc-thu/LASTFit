@@ -217,6 +217,10 @@ subroutine completeflux_un(ucons0,shockh,shockv,&
     allocate(visfhat(1:5,1-overlap:nx_local+overlap,1:ny_local,1-overlap:nz_local+overlap))
     allocate(visghat(1:5,1-overlap:nx_local+overlap,1:ny_local,1-overlap:nz_local+overlap))
     allocate(vishhat(1:5,1-overlap:nx_local+overlap,1:ny_local,1-overlap:nz_local+overlap))
+    ! The viscous mass flux vanishes identically.
+    visfhat(1,:,:,:) = 0.d0
+    visghat(1,:,:,:) = 0.d0
+    vishhat(1,:,:,:) = 0.d0
     allocate(visfhatdxi(1:5,1-overlap:nx_local+overlap,1:ny_local,1-overlap:nz_local+overlap))
     allocate(visghatdeta(1:5,1-overlap:nx_local+overlap,1:ny_local,1-overlap:nz_local+overlap))
     allocate(vishhatdzeta(1:5,1-overlap:nx_local+overlap,1:ny_local,1-overlap:nz_local+overlap))

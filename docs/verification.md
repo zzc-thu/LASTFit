@@ -93,18 +93,51 @@ non-positive pressure and corrupt record trailers. These are input checks,
 not accuracy or convergence tests.
 
 The current compact nonlinear ten-step run exits normally; two VTK files
-have valid block lengths and finite values. Rebuilding loaded LNS base-flow
-metrics does not resolve its numerical failure: the first detected bad
+have valid block lengths and finite values. Before the viscous-mass-flux fix
+below, rebuilding loaded LNS base-flow metrics did not resolve its numerical
+failure: the first detected bad
 interior cell is (63,51,1) on rank 0 at step 4, on the shock boundary.
 New guards stop the run without saving the invalid perturbation checkpoint.
-This LNS example remains a failing diagnostic, not a validated regression;
-the staging tool requires `--allow-unverified` for it.
+That pre-fix run was a failing diagnostic, not a validated regression.
 
 New LNS restart metadata verify the time step, grid, MPI partition and next
 iteration. Legacy histories without verified metadata are rejected. This
 safety check is not proof of a passing time-continuous LNS restart.
 Four runtime guard regressions pass: missing metadata, wrong time step,
 wrong grid and non-finite saved history are all rejected with nonzero exit.
+
+## LNS Residual Diagnosis (2026-10-11)
+
+The first failure occurs in the tangent residual, before the step-4 shock
+boundary update. At cell (63,51,1), only the mass residual first becomes NaN;
+the preceding shock-boundary evaluations and forcing derivatives are finite.
+
+`Complete_Flux_un_d.f90` allocated the transformed viscous fluxes and their
+tangents without initializing component 1. The transformation loop filled
+only components 2 through 5, while differentiation and residual assembly
+read all five. Undefined mass flux contaminated the tangent mass residual
+and then the shock acceleration. Component 1 is now explicitly zero in all
+six arrays. The same correction is included in the nonlinear reference
+routine `Complete_Flux_un.f90`; that reference is not an active compilation
+unit in the supplied Makefile.
+
+Using Intel Fortran Classic 2021.11 and Intel MPI 2021.11 on Windows, the
+compact one-rank case reached 10 and 100 steps with the original LNS time
+step and forcing amplitude. Final VTK blocks and piece references are valid,
+and output fields and all four interior history levels are finite. A ten-step
+zero-forcing run retained exactly zero interior flow and shock perturbations.
+
+Two limitations remain. External physical-boundary ghost storage contains
+non-finite values; it is checked separately from the interior. Restarting a
+ten-step history to step 20 produces a maximum interior absolute difference
+of approximately 1.12e-12 relative to uninterrupted integration. This exceeds
+the diagnostic threshold of 1e-12 and is not recorded as a strict restart pass.
+The result was repeated with identical solver binaries.
+
+The preparation tool still requires `--allow-unverified`. These short runs
+do not establish long-time stability, production-grid reproduction, AD Taylor
+consistency, grid/time convergence, three-dimensional LNS coupling, or Linux
+runtime compatibility. No original reference output has been overwritten.
 
 ## Release Status
 

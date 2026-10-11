@@ -11,11 +11,11 @@ parser.add_argument('case', choices=('circular_cylinder', 'parabolic_nonlinear',
 parser.add_argument('--run-dir', type=Path, required=True)
 parser.add_argument('--solver', type=Path, required=True)
 parser.add_argument('--steps', type=int, default=10, help='Last step for a new short run (default: 10)')
-parser.add_argument('--allow-unverified', action='store_true', help='Allow the currently failing LNS diagnostic')
+parser.add_argument('--allow-unverified', action='store_true', help='Allow the LNS case with incomplete numerical and restart validation')
 args = parser.parse_args()
 repo = Path(__file__).resolve().parents[1]
 if args.case == 'parabolic_lns' and not args.allow_unverified:
-    parser.error('LNS currently fails the finite-value regression; use --allow-unverified for diagnosis only')
+    parser.error('LNS validation is incomplete; use --allow-unverified for diagnostic runs only')
 folder = 'hifire5_acoustic' if args.case == 'hifire5_steady' else args.case
 case_dir = repo / 'example' / folder
 config_name = 'Config_steady.cfg' if args.case == 'hifire5_steady' else 'Config.cfg'

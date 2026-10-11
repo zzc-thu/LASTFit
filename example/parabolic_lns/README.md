@@ -62,14 +62,19 @@ flow and forcing parameters unchanged as well.
 
 ## Data Scope
 
-The local short-run audit found non-finite perturbations despite a structurally
-valid base-flow checkpoint. This example is not a passing numerical regression
-until the LNS initialization/operator issue is resolved. Saving continuation
-metadata does not establish that the saved perturbations are valid.
-The current guard reports the first invalid interior cell at step 4 on the
-shock boundary, stops with a nonzero exit status and does not save that
-checkpoint. The preparation tool requires `--allow-unverified` for diagnostic
-use of this case.
+The initial short-run audit failed at step 4 because the transformed viscous
+mass flux and its tangent were read without initialization. These components
+are now explicitly zero, consistent with the perfect-gas mass equation.
+With the supplied base flow and `LNS_dt=6e-6`, one-rank Windows runs reached
+10 and 100 steps with finite interior histories and valid, finite VTK output.
+A zero-forcing run preserved exactly zero interior flow and shock perturbations.
+
+This is a limited runtime check, not a completed numerical validation.
+Stored physical-boundary ghost cells still contain non-finite values.
+A 10-step run restarted to step 20 differed from an uninterrupted run by
+approximately 1.12e-12 in the interior histories, slightly exceeding the
+diagnostic absolute tolerance of 1e-12. This strict restart check remains open.
+The preparation tool retains `--allow-unverified` for diagnostic use.
 
 The compact grid is 81 x 51 x 8, whereas the manuscript LNS/nonlinear comparison
 uses 181 x 161 x 8. The complete production-grid comparison time series are not
