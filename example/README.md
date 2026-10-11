@@ -16,10 +16,7 @@ inputs are supplied. Results are generated in isolated run directories.
 | [Blunt cone at incidence](blunt_cone_aoa1/) | Steady nonlinear | 120 x 151 x 40 | 8 | None; checkpoint provided |
 | [HIFiRE-5-type elliptic cone](hifire5_acoustic/) | Nonlinear acoustic | 90 x 81 x 160 | 4 | None; checkpoint provided |
 
-HIFiRE also includes a one-rank steady configuration and a separate 192-rank
-production-run configuration record under [docs/archive](../docs/archive/).
-The latter is incompatible with the current geometry numbering and is not
-a runnable example.
+HIFiRE also includes a one-rank steady configuration with a separate grid.
 
 ## Organization
 

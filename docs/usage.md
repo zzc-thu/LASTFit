@@ -67,8 +67,7 @@ cp "$case_dir"/restart/*.flowsfg "$case_dir"/restart/*.shksfg "$run_dir/RESU/"
 
 Each [case README](../example/README.md#case-index) identifies the required
 data and staging commands. Compact acoustic examples reuse the supplied
-base-flow snapshots; the historical production configuration requires
-separate compatible data and source migration.
+base-flow inputs. Production configurations require their own compatible data.
 The MPI process count is `npx0 * npz0`.
 On a cluster, replace `mpirun` with the site-supported launcher.
 
@@ -163,7 +162,7 @@ file integrity, not numerical correctness.
 Part I uses a calorically perfect gas, Sutherland-law viscosity, structured
 shock-fitted grids, no-slip isothermal or adiabatic walls, and CPU-based MPI.
 Reacting chemistry, thermal nonequilibrium, general multi-block coupling,
-unstructured meshes, and GPU execution are outside this snapshot.
+unstructured meshes, and GPU execution are outside Part I.
 
 Use the [citation metadata](../CITATION.cff) and record the exact commit used.
 No archival DOI or formal release tag is assigned. Bug reports should include

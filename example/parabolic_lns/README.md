@@ -61,27 +61,13 @@ flow and forcing parameters unchanged as well.
 
 ## Data Scope
 
-The initial short-run audit failed at step 4 because the transformed viscous
-mass flux and its tangent were read without initialization. These components
-are now explicitly zero, consistent with the perfect-gas mass equation.
-With the supplied base flow and `LNS_dt=6e-6`, one-rank Windows runs reached
-10 and 100 steps with finite interior histories and valid, finite VTK output.
-A zero-forcing run preserved exactly zero interior flow and shock perturbations.
-
-Further repairs initialize operator workspaces, evaluate boundary formulas
-on owned cells, and keep forcing on the fixed base-flow shock with unforced
-primal inputs. All stored LNS history levels, including exterior storage,
-are finite in the repaired short runs. A ten-step run continued to step 20
-matches the uninterrupted history exactly; two-rank partitions in either
-direction agree with the single-rank owned fields. Amplitude scaling and
-all four forcing modes have also been checked in short runs.
-
-These are limited runtime checks, not completed numerical validation.
-Grid/time convergence, AD Taylor tests, long-time behavior and nontrivial
-three-dimensional LNS coupling remain unverified. The preparation tool
-retains `--allow-unverified` for diagnostic use. Saved histories can be
-checked with `tools/check_lns_results.py`; record the source commit with
-each run and do not mix checkpoints from different operator revisions.
+The supplied base flow supports short-run LNS checks at `LNS_dt=6e-6`.
+The [verification guide](../../docs/verification.md) reports runtime,
+restart, MPI partition and amplitude-scaling tests and their limitations.
+The preparation tool requires `--allow-unverified` for diagnostic LNS runs
+because convergence and complete AD consistency validation remain incomplete.
+Saved histories can be checked with `tools/check_lns_results.py`.
+Record the source commit and do not mix checkpoints from different operators.
 
 The compact grid is 81 x 51 x 8, whereas the manuscript LNS/nonlinear comparison
 uses 181 x 161 x 8. The complete production-grid comparison time series are not

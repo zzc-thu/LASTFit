@@ -28,10 +28,9 @@ planar fast-acoustic forcing.
 
 ## Run
 
-The restored checkpoint contains conservative variables and all three
-coordinate records. Its conservative record and shock file are identical
-to the previously distributed checkpoint. The matching compact base-flow
-snapshot is shared with `parabolic_lns`; the grid, wall coordinates and
+The checkpoint contains conservative variables and all three
+coordinate records. The matching compact base-flow input
+is shared with `parabolic_lns`; the grid, wall coordinates and
 nominal physical parameters match. This does not establish convergence.
 
 Run the following Bash commands from the repository root after initializing

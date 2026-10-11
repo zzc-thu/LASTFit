@@ -61,11 +61,11 @@ correctness; consult the verification status before choosing that example.
 - [Build and execution](docs/usage.md)
 - [Source modules](src/README.md)
 - [Verification status](docs/verification.md)
-- [Changelog](docs/CHANGELOG.md)
+- [Optional utilities](tools/README.md)
 - [Citation metadata](CITATION.cff)
 
-Version 0.1.0 identifies the current research snapshot; no formal release tag
-is published. The repository currently contains a [BSD-3-Clause license](LICENSE).
+The source version is 0.1.0. LASTFit is distributed under the
+[BSD-3-Clause license](LICENSE). Record the exact commit when using the code.
 Part I covers a calorically perfect gas. Five-species and eleven-species models
 and multigrid extensions are planned for Part II, not included here.
 

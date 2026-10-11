@@ -16,11 +16,6 @@ The compact configurations use Mach 6, `Re_Ref=10.2e6`, and a 7-degree cone half
 The compact acoustic example specifies `epsilon=5e-4` and `k_infty=15`.
 The compact acoustic MPI decomposition is `2 x 2`, matching the supplied
 four-rank checkpoint and reference grid.
-The production record instead specifies `k_infty=3700`, fixed time step
-`1e-7`, and output every 2000 steps. The configurations are not interchangeable.
-
-The incompatible [E4 production configuration](../../docs/archive/README.md)
-is stored separately as a historical record, not a runnable example.
 
 ## Included Data
 
@@ -31,10 +26,9 @@ is stored separately as a historical record, not a runnable example.
 ## Run
 
 The primary configuration starts a new four-rank acoustic calculation.
-The files retained under the historical path `restart/unsteady/` match an
-archived `RESU_STEADY` snapshot byte for byte. They provide the compact
-`90 x 81 x 160`, `2 x 2` base-flow input; the commands below also copy them
-to `RESU_STEADY/`. Their provenance does not establish convergence.
+The files in `restart/unsteady/` provide the matching
+`90 x 81 x 160`, `2 x 2` base-flow input. Copy them
+to `RESU_STEADY/` as shown below. Their availability does not establish convergence.
 The distributed `Config_steady.cfg` uses a different grid and is not that
 base flow. Run these Bash commands from the repository root.
 
