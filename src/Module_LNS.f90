@@ -38,7 +38,6 @@ Module SF_LNS
   contains
 
   subroutine LNS_Solver
-
     implicit none
     integer( kind = ik ):: LNS_Steps,ic,jc,kc
    
@@ -46,8 +45,12 @@ Module SF_LNS
     call ReadSteadyState
 
     IF(IF_Continue_LNS == 1)then
-        
+       call Check_LNS_Metadata
        call READ_LNS_RESULTS
+       call Check_LNS_State(LNS_CVp1,LNS_ShockHp1,LNS_ShockVp1,0)
+       call Check_LNS_State(LNS_CVp2,LNS_ShockHp2,LNS_ShockVp2,0)
+       call Check_LNS_State(LNS_CVp3,LNS_ShockHp3,LNS_ShockVp3,0)
+       call Check_LNS_State(LNS_CVp4,LNS_ShockHp4,LNS_ShockVp4,0)
         
     else    
     
@@ -317,6 +320,7 @@ Module SF_LNS
                         &Heta,Hetadxi,Hetadeta,Hetadzeta,&
                         &R_local,Rd_local,shockAc_local,shockAcd_local,&
                         &shocknormalxd_local,shocknormalyd_local,shocknormalzd_local,shockXtaud_local)
+    call Check_LNS_State(Rd_local,shockAcd_local,shockAc_local,Iter)
     
     !call completeflux_d_mpi(ucons0_steady, ucons0d_local, shockh_steady, shockhd_local, shockv_steady, &
     !& shockvd_local, nx_local, ny, nz_local, overlap, gamma, mach_ref, &
@@ -358,6 +362,7 @@ Module SF_LNS
     use SF_Constant,   only: FilesForContinue
     use MPI_GLOBAL,    only: MyId,ierr,MPI_COMM_WORLD
     use OutputParaView,only: output_results
+    use SF_CFD_Global, only: ModelType
 
     implicit none
     logical:: dir_exists
@@ -434,6 +439,15 @@ Module SF_LNS
     ! Exchange the shock related variables
     call Parallel_Exchange_Surface(ShockH_steady)
     call Parallel_Exchange_Surface(ShockV_steady)
+    ! Rebuild metrics and steady shock normals from the loaded base flow.
+    Ucons0 = Ucons0_steady
+    ShockH = ShockH_steady
+    ShockV = ShockV_steady
+    if(ModelType == 1) then
+      call Calculate_Jaco
+    else
+      call Singular_Calculate_Jaco
+    endif
     !call Parallel_Exchange_Surface(shockH)
     !call Parallel_Exchange_Surface(shockV)
     
@@ -543,6 +557,89 @@ Module SF_LNS
       write(*,"(A)")"========================================================================================="
     end if    
   end subroutine Read_LNS_Results
+
+  subroutine Check_LNS_Metadata
+    use SF_CFD_Global, only: Nz
+    use MPI_GLOBAL, only: npx0,npz0
+    use mpi, only: MPI_Abort
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    integer :: ios, next_step, stored_step, gx,gy,gz,px,pz
+    real(kind=rk) :: saved_dt
+    logical :: exists
+
+    inquire(file='LNSResults/RestartMetadata.dat',exist=exists)
+    if(.not.exists) then
+      if(MyId == 0) write(*,*)'LNS restart lacks verified time/grid metadata. Legacy history requires provenance verification.'
+      call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+      stop
+    endif
+    open(1128,file='LNSResults/RestartMetadata.dat',status='old',iostat=ios)
+    if(ios == 0) then
+      read(1128,*,iostat=ios)next_step,saved_dt,gx,gy,gz,px,pz
+      close(1128)
+    endif
+    if(ios /= 0) then
+      write(*,*)'Invalid LNS restart metadata on rank ',MyId
+      call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+      stop
+    endif
+    if(.not.ieee_is_finite(saved_dt) .or. saved_dt <= 0.d0 .or. next_step < 4) then
+      call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+      stop
+    endif
+    if(abs(saved_dt-LNS_dt) > 16.d0*spacing(saved_dt) .or. &
+       gx /= Nx .or. gy /= Ny .or. gz /= Nz .or. px /= npx0 .or. pz /= npz0) then
+      if(MyId == 0) write(*,*)'LNS restart time step, grid or MPI partition mismatch.'
+      call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+      stop
+    endif
+    open(1128,file='LNSResults/IterationNumber.dat',form='unformatted',status='old',iostat=ios)
+    if(ios == 0) then
+      read(1128,iostat=ios)stored_step
+      close(1128)
+    endif
+    if(ios /= 0) then
+      call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+      stop
+    endif
+    if(stored_step /= next_step) then
+      if(MyId == 0) write(*,*)'LNS restart iteration metadata mismatch.'
+      call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+      stop
+    endif
+  end subroutine Check_LNS_Metadata
+
+  subroutine Check_LNS_State(cv,sh,sv,step)
+    use mpi
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    real(kind=rk), intent(in) :: cv(NumVar,1-overlap:nx_local+overlap,Ny,1-overlap:nz_local+overlap)
+    real(kind=rk), intent(in) :: sh(1-overlap:nx_local+overlap,1-overlap:nz_local+overlap)
+    real(kind=rk), intent(in) :: sv(1-overlap:nx_local+overlap,1-overlap:nz_local+overlap)
+    integer, intent(in) :: step
+    integer :: bad,any_bad,ic,jc,kc
+    bad = 0
+    if(.not.all(ieee_is_finite(cv(:,1:nx_local,:,1:nz_local)))) bad = 1
+    if(.not.all(ieee_is_finite(sh(1:nx_local,1:nz_local)))) bad = 1
+    if(.not.all(ieee_is_finite(sv(1:nx_local,1:nz_local)))) bad = 1
+    call MPI_Allreduce(bad,any_bad,1,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
+    if(any_bad /= 0) then
+      first_bad: do kc=1,nz_local
+        do jc=1,Ny
+          do ic=1,nx_local
+            if(.not.all(ieee_is_finite(cv(:,ic,jc,kc)))) then
+              write(*,*)'First non-finite LNS cell on rank ',MyId,': ',ic,jc,kc
+              exit first_bad
+            endif
+          enddo
+        enddo
+      enddo first_bad
+      if(MyId == 0) write(*,*)'Non-finite interior LNS state at step ',step,'. Checkpoint not saved.'
+      call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+      stop
+    endif
+  end subroutine Check_LNS_State
   
   subroutine LNS_BC_update(LNS_shockHp_local,LNS_shockVp_local,Iter)
     implicit none
@@ -625,16 +722,22 @@ Module SF_LNS
      deallocate(sW)
      deallocate(sP)
      deallocate(sT)
+     call Check_LNS_State(LNS_CVp0,LNS_shockHp_local,LNS_shockVp_local,Iter)
      
   end subroutine LNS_BC_update
   
   subroutine OutputLNS_Results(Iter)
-  
+    use MPI_GLOBAL, only: npx0,npz0
+    use SF_CFD_Global, only: Nz
     implicit none
     integer( kind = ik ), intent(in) :: Iter
     integer( kind = ik ):: ic,jc,kc,loc_jc
     character(len=200)filename
     character(len=200)filename_shk,filename_flow
+    call Check_LNS_State(LNS_CVp1,LNS_ShockHp1,LNS_ShockVp1,Iter)
+    call Check_LNS_State(LNS_CVp2,LNS_ShockHp2,LNS_ShockVp2,Iter-1)
+    call Check_LNS_State(LNS_CVp3,LNS_ShockHp3,LNS_ShockVp3,Iter-2)
+    call Check_LNS_State(LNS_CVp4,LNS_ShockHp4,LNS_ShockVp4,Iter-3)
     
     !if(mod(Iter,StepsWriteData) == 0) then
         
@@ -698,10 +801,18 @@ Module SF_LNS
      close(118)
      
      !if(MyId == 0 ) write(*,*)"Saving Iteration Number"
-     !open(113,file='./LNSResults/IterationNumber.dat',form='unformatted',status='replace')
-     !write(113)Iter + 1
-     !close(113)
-     
+     if(MyId == 0) then
+       open(113,file='./LNSResults/IterationNumber.dat',form='unformatted',status='replace')
+       write(113)Iter + 1
+       close(113)
+     endif
+     call MPI_Barrier(MPI_COMM_WORLD,ierr)
+     if(MyId == 0) then
+       open(113,file='./LNSResults/RestartMetadata.dat',status='replace')
+       write(113,*)Iter+1,LNS_dt,Nx,Ny,Nz,npx0,npz0
+       close(113)
+     endif
+     call MPI_Barrier(MPI_COMM_WORLD,ierr)
      if(MyId == 0 ) write(*,*)"Saving flow field finished"
     ! Interp_LNS_Results
      

@@ -44,6 +44,18 @@ Each case contains a configuration, reference grid, restart data, and
 representative outputs. See the [case index](example/README.md) for data scope.
 The examples do not include all manuscript production histories.
 
+Check supplied inputs with Python 3.9+ and NumPy (not solver dependencies):
+
+```bash
+python tools/check_examples.py
+python tools/prepare_case.py parabolic_nonlinear --solver src/SFSolver --run-dir run/parabolic_check --steps 10
+```
+
+The staging tool creates a new directory, copies the required checkpoints
+and base flow, and leaves reference inputs unchanged. Run the printed MPI
+command from that directory. Input checks do not certify LNS numerical
+correctness; consult the verification status before choosing that example.
+
 ## Documentation
 
 - [Build and execution](docs/usage.md)

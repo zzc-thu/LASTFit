@@ -4,6 +4,9 @@
 
 The `SF_Results*.flowsfg` and `SF_Results*.shksfg` files form matching
 flow/shock pairs for the 1 x 1 MPI decomposition and 81 x 51 x 8 grid.
+The complete flow file was restored from an archive with an identical
+conservative-variable record and shock file. It includes the three
+coordinate records required by the current reader.
 
 Copy only these numerical files, not this README, into the run directory's
 `RESU/`. The supplied configuration enables continuation.

@@ -51,7 +51,25 @@ The base flow is read from `RESU_STEADY/` even though perturbation continuation
 is disabled. Linearized fields and perturbation restarts are written to
 `LNSResults/`.
 
+For this analysis, `LNS_dt=6e-6` controls integration; `FixedDeltaTime` and
+the nonlinear CFL ramp do not set the LNS time step. Perturbation continuation
+requires all four saved time levels, `IterationNumber.dat`, and
+`RestartMetadata.dat`, in addition to the steady base flow. New metadata
+record the next step, `LNS_dt`, grid and MPI partition. Incompatible or
+metadata-free legacy histories are rejected; never fabricate metadata for
+an archive without first verifying its original settings. Keep the base
+flow and forcing parameters unchanged as well.
+
 ## Data Scope
+
+The local short-run audit found non-finite perturbations despite a structurally
+valid base-flow checkpoint. This example is not a passing numerical regression
+until the LNS initialization/operator issue is resolved. Saving continuation
+metadata does not establish that the saved perturbations are valid.
+The current guard reports the first invalid interior cell at step 4 on the
+shock boundary, stops with a nonzero exit status and does not save that
+checkpoint. The preparation tool requires `--allow-unverified` for diagnostic
+use of this case.
 
 The compact grid is 81 x 51 x 8, whereas the manuscript LNS/nonlinear comparison
 uses 181 x 161 x 8. The complete production-grid comparison time series are not

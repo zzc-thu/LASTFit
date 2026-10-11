@@ -65,8 +65,11 @@ cp "$case_dir"/restart/*.flowsfg "$case_dir"/restart/*.shksfg "$run_dir/RESU/"
 )
 ```
 
-Each [case README](../example/README.md#case-index) gives a complete staging
-command for its own configuration. The MPI process count is `npx0 * npz0`.
+Each [case README](../example/README.md#case-index) identifies the required
+data and staging commands. Compact acoustic examples reuse the supplied
+base-flow snapshots; the historical production configuration requires
+separate compatible data and source migration.
+The MPI process count is `npx0 * npz0`.
 On a cluster, replace `mpirun` with the site-supported launcher.
 
 ### Restart Rules
@@ -79,12 +82,37 @@ On a cluster, replace `mpirun` with the site-supported launcher.
 | LNS continuation | `IF_Continue_LNS=1` | Base flow plus compatible perturbation restart in `LNSResults/` |
 
 LNS base-flow data are required even when perturbation continuation is disabled.
+Nonlinear acoustic perturbation output also requires a matching steady base
+flow in `RESU_STEADY/`. It must have the same grid, partition and physical
+parameters as the acoustic run.
 A separate `IF_Continue_Calculate=1` also activates the nonlinear initialization
 restart path. The included LNS configuration sets that control to zero.
 
 Do not change grid dimensions or MPI partitioning when using an existing
 restart. Restart files use Fortran unformatted records; portability between
 compiler/runtime environments has not been established.
+
+New unsteady checkpoints include a per-rank `SF_ResultsXXXXX.time` file with
+the next iteration, accumulated physical time and previous time step. Copy
+it with the matching flow/shock files. Legacy checkpoints without these files
+are warm starts at zero time, not time-continuous restarts.
+LNS continuation requires all four `Pert_Results_t0` through `t3` flow/shock
+histories, `LNSResults/IterationNumber.dat`, and `RestartMetadata.dat`.
+New LNS metadata record the next step, time step, grid and MPI partition;
+mismatches or metadata-free legacy histories are rejected. Base flow and
+forcing parameters must also remain consistent. Keep `LNS_dt` unchanged.
+
+For automatic input checks and isolated short-run preparation:
+
+```bash
+python tools/check_examples.py
+python tools/test_check_examples.py
+python tools/prepare_case.py parabolic_nonlinear --solver src/SFSolver --run-dir run/parabolic_check --steps 10
+```
+
+Input checks and their tests require NumPy. Staging requires Python 3.9+
+only and refuses to overwrite existing run directories. A passing input
+check is not a passing LNS or convergence test.
 
 The supplied iteration limits are research-run controls, not short test
 budgets. A shortened run requires changing the time-step limit and output

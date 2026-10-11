@@ -29,6 +29,12 @@ planar fast-acoustic forcing.
 
 ## Run
 
+The restored checkpoint contains conservative variables and all three
+coordinate records. Its conservative record and shock file are identical
+to the previously distributed checkpoint. The matching compact base-flow
+snapshot is shared with `parabolic_lns`; the grid, wall coordinates and
+nominal physical parameters match. This does not establish convergence.
+
 Run the following Bash commands from the repository root after initializing
 the MPI/compiler environment. The source configuration remains unchanged.
 
@@ -36,11 +42,16 @@ the MPI/compiler environment. The source configuration remains unchanged.
 set -e
 make -C src
 case_dir="$PWD/example/parabolic_nonlinear"
+base_dir="$PWD/example/parabolic_lns/restart"
 run_dir="$PWD/run/parabolic_nonlinear"
 mkdir -p "$run_dir"/{INIT,CheckFiles,JACO,RESU,RESU_STEADY,LNSResults,Pert}
 cp src/SFSolver "$run_dir/"
 cp "$case_dir/Config.cfg" "$run_dir/"
-cp "$case_dir"/restart/*.flowsfg "$case_dir"/restart/*.shksfg "$run_dir/RESU/"
+cp "$case_dir"/restart/SF_Results*.flowsfg "$run_dir/RESU/"
+cp "$case_dir"/restart/SF_Results*.shksfg "$run_dir/RESU/"
+cp "$base_dir"/SF_Results*.flowsfg "$run_dir/RESU_STEADY/"
+cp "$base_dir"/SF_Results*.shksfg "$run_dir/RESU_STEADY/"
+# For time-continuous continuation, also copy the matching SF_Results*.time files.
 (
   cd "$run_dir"
   mpirun -np 1 ./SFSolver
@@ -49,6 +60,9 @@ cp "$case_dir"/restart/*.flowsfg "$case_dir"/restart/*.shksfg "$run_dir/RESU/"
 
 Nonlinear fields and restarts are written to `RESU/`; perturbation fields are
 written to `Pert/` at the configured cadence.
+Copy checkpoint `.time` files into `RESU/` when continuing an unsteady run.
+Without time metadata, legacy files are treated as a warm start at zero time
+and the solver prints a warning.
 
 ## Data Scope
 

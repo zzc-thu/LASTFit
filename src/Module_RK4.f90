@@ -171,7 +171,7 @@ Module Runge_Kutta_4
      !read(113)Iteration
      !close(113)
      !write(*,*)Iteration
-     Time_old = (Iteration-1) * DT0;
+     Time_old = Time_new;
      
      UconsOld = Ucons0;
      ShockH_old= ShockH;

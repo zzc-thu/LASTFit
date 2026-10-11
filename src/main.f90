@@ -12,7 +12,7 @@ program SFSolver
   use SF_CFD_Global,     only: Iteration, TotalTimeSteps, Select_Kind_Precon_Solver,&
                               &Select_Kind_Solver,IfConverge,ModelType,AnalysisType,&
                               &IF_FixedDeltatime,FixedDeltatime,dT0,Rds_Max,StepsWriteData,&
-                              &IF_Continue_Calculate,Iteration_start
+                              &IF_Continue_Calculate,Iteration_start,Time_new
   use MPI_Global,        only: MyId,MPI_COMM_WORLD,ierr
   ! matrix and arrays
   ! subroutine and function declaration
@@ -199,6 +199,8 @@ program SFSolver
       !close(113)  
 
      Iteration_start = 1
+     Time_new = 0.d0
+     if(IF_Continue_Calculate == 1) call ReadUnsteadyTime
 
     ! write(*,*)"Iteration_start=",Iteration_start
       Main_Time_LoopRK4_unsteady: do Iteration = Iteration_start, TotalTimeSteps     
@@ -212,6 +214,7 @@ program SFSolver
           !write(*,*)dT0
          ! Here we have the time marching
           call IncreamentRK4_unsteady
+          Time_new = Time_new + dT0
           !call test_complete_flux
           call Calculate_Jaco
           call Update_Variables

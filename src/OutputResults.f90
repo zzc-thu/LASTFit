@@ -1,7 +1,7 @@
 subroutine OutputResults(Iter)
-  use SF_Constant,       only:ik,FilesForContinue
+  use SF_Constant,       only:ik,FilesForContinue,Unsteady_NS_Analysis
   use SF_CFD_Global,     only:Ny,nx_local,nz_local,StepsWriteData,OutputFileNo,&
-                              Nx,Nz,ModelType
+                              Nx,Nz,ModelType,AnalysisType,Time_new,dT0
   use MPI_GLOBAL,        only:MyId,NumProcess!Parallel_OutputFunction3D
   ! matrix and array
   use SF_CFD_Global,     only:x_grid,y_grid,z_grid,Rho,U,V,W,P,T,&
@@ -39,6 +39,12 @@ subroutine OutputResults(Iter)
      write(112)y_grid
      write(112)z_grid
      close(112)
+     if(AnalysisType == Unsteady_NS_Analysis) then
+       write(filename,'(A,A,I5.5,A)')'RESU/',trim(FilesForContinue),MyId,'.time'
+       open(113,file=filename,form='formatted',status='replace')
+       write(113,*)Iter + 1,Time_new,dT0
+       close(113)
+     endif
      if(MyId == 0 ) write(*,*)"Saving finished"
     
      !if(MyId == 0 ) write(*,*)"Saving Iteration Number"
@@ -84,6 +90,59 @@ subroutine OutputResults(Iter)
   endif
   
   end subroutine OutputResults
+
+subroutine ReadUnsteadyTime
+  use SF_Constant, only:rk,FilesForContinue
+  use SF_CFD_Global, only:Iteration_start,Time_new
+  use MPI_GLOBAL, only:MyId,ierr
+  use mpi
+  use, intrinsic :: ieee_arithmetic, only:ieee_is_finite
+  implicit none
+  character(len=100)::filename
+  integer::ios,present_local,present_min,present_max,step_min,step_max
+  real(kind=rk)::previous_dt,time_min,time_max
+  logical::exists
+
+  write(filename,'(A,A,I5.5,A)')'RESU/',trim(FilesForContinue),MyId,'.time'
+  inquire(file=filename,exist=exists)
+  present_local = merge(1,0,exists)
+  call MPI_Allreduce(present_local,present_min,1,MPI_INTEGER,MPI_MIN,MPI_COMM_WORLD,ierr)
+  call MPI_Allreduce(present_local,present_max,1,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
+  if(present_min /= present_max) then
+    if(MyId == 0) write(*,*)'Incomplete per-rank restart time metadata.'
+    call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+    stop
+  endif
+  if(.not.exists) then
+    if(MyId == 0) write(*,*)'WARNING: no time metadata; warm start at t=0, not continuous restart.'
+    return
+  endif
+  open(113,file=filename,form='formatted',status='old',iostat=ios)
+  if(ios == 0) then
+    read(113,*,iostat=ios)Iteration_start,Time_new,previous_dt
+    close(113)
+  endif
+  if(ios /= 0) then
+    write(*,*)'Invalid restart time metadata on rank ',MyId
+    call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+    stop
+  endif
+  if(Iteration_start < 1 .or. .not.ieee_is_finite(Time_new) .or. &
+     .not.ieee_is_finite(previous_dt) .or. Time_new < 0.d0 .or. previous_dt <= 0.d0) then
+    write(*,*)'Invalid restart time values on rank ',MyId
+    call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+    stop
+  endif
+  call MPI_Allreduce(Iteration_start,step_min,1,MPI_INTEGER,MPI_MIN,MPI_COMM_WORLD,ierr)
+  call MPI_Allreduce(Iteration_start,step_max,1,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,ierr)
+  call MPI_Allreduce(Time_new,time_min,1,MPI_DOUBLE_PRECISION,MPI_MIN,MPI_COMM_WORLD,ierr)
+  call MPI_Allreduce(Time_new,time_max,1,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,ierr)
+  if(step_min /= step_max .or. time_min /= time_max) then
+    if(MyId == 0) write(*,*)'Restart time metadata differ across ranks.'
+    call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+    stop
+  endif
+end subroutine ReadUnsteadyTime
   
     
     
@@ -139,4 +198,4 @@ SUBROUTINE Parallel_OutputFunction(FileNumber,Uin,Nx,Ny,nx_local,ny_local)
   
   call MPI_BARRIER(MPI_COMM_WORLD,ierr)
 
-END SUBROUTINE Parallel_OutputFunction        
+END SUBROUTINE Parallel_OutputFunction

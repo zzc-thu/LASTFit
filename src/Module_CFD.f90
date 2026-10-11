@@ -1843,10 +1843,6 @@ SUBROUTINE Finilize_SFSolver
     DEALLOCATE(LNS_CVp2)
     DEALLOCATE(LNS_CVp3)
     
-    Deallocate(LNS_CVp0)
-    DEALLOCATE(LNS_CVp1)
-    DEALLOCATE(LNS_CVp2)
-    DEALLOCATE(LNS_CVp3)
     DEALLOCATE(LNS_CVp4)
     DEALLOCATE(AB_Sum_CVp0)
 
@@ -1944,7 +1940,6 @@ SUBROUTINE Finilize_SFSolver
     DEALLOCATE(z_grid_interp)
     
     DEALLOCATE(Hdst_interp)
-    DEALLOCATE(Hdst_steady)
     DEALLOCATE(etaSC)
     
   endif

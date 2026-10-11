@@ -3,7 +3,8 @@
 *.cfg text eol=lf
 *.cff text eol=lf
 *.csv text eol=lf
-*.f90 text eol=lf
+# Preserve inherited Fortran line endings; avoid whole-file normalization on commit.
+*.f90 -text
 *.md text eol=lf
 *.m text eol=lf
 *.pvts text eol=lf

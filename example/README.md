@@ -17,8 +17,9 @@ reproductions of every manuscript figure.
 | [HIFiRE-5-type elliptic cone](hifire5_acoustic/) | Nonlinear acoustic | 90 x 81 x 160 | 4 | None; checkpoint provided |
 
 HIFiRE also includes a one-rank steady configuration and a separate 192-rank
-production-run configuration record. The latter is not a self-contained
-runnable example; see its [case README](hifire5_acoustic/README.md).
+production-run configuration record under [docs/archive](../docs/archive/).
+The latter is incompatible with the current geometry numbering and is not
+a runnable example.
 
 ## Organization
 

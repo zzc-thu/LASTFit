@@ -64,7 +64,10 @@ Module OutputParaView
     
     if( if_parallel) then  
      !Output the VTS files, we have 9 cases, we need to handle all the things
-     if(npx == 0) then
+     if(npx0 == 1) then
+       i_local_start = 1
+       i_local_end = nx_local
+     else if(npx == 0) then
        global_Iend   = global_Iend + 1;   
        i_local_start = 1; 
        i_local_end = nx_local + 1;
@@ -82,7 +85,10 @@ Module OutputParaView
        j_local_start = 1; 
        j_local_end = Ny;  
    
-     if(npz == 0) then
+     if(npz0 == 1) then
+       k_local_start = 1
+       k_local_end = nz_local
+     else if(npz == 0) then
        global_Kend   = global_Kend + 1; 
        k_local_start = 1; 
        k_local_end = nz_local + 1;    
@@ -166,7 +172,9 @@ Module OutputParaView
             global_kend   = k_offset(kc) + k_nn(kc) - 1;
            
           if(if_parallel) then  
-           if(ic == 0 ) then
+           if(npx0 == 1) then
+             global_Iend = i_offset(ic) + i_nn(ic) - 1
+           else if(ic == 0 ) then
              global_Iend   = global_Iend + 1;  
            elseif(ic == npx0 - 1) then
              global_Istart = global_Istart - 1;  
@@ -186,7 +194,9 @@ Module OutputParaView
            global_jstart = 1;
            global_jend   = Ny;
 
-           if(kc == 0 ) then
+           if(npz0 == 1) then
+             global_Kend = k_offset(kc) + k_nn(kc) - 1
+           else if(kc == 0 ) then
              global_Kend   = global_Kend + 1; 
            elseif(kc == npz0 - 1) then
              global_Kstart = global_Kstart - 1;
@@ -282,7 +292,7 @@ Module OutputParaView
       write(1231) trim(adjustl(xml_part))
     !write(*,*)"write xx,yy,zz"
       write(1231) "_"
-      write(1231) 3*size_real*int(gridsize_64,int64_kind)
+      write(1231) 3*int(gridsize_64,int64_kind)
       icounts = 1
       do k = k_local_start,k_local_end
         do j = j_local_start,j_local_end
@@ -345,7 +355,10 @@ Module OutputParaView
     
     if( if_parallel) then  
      !Output the VTS files, we have 9 cases, we need to handle all the things
-     if(npx == 0) then
+     if(npx0 == 1) then
+       i_local_start = 1
+       i_local_end = nx_local
+     else if(npx == 0) then
        global_Iend   = global_Iend + 1;
        i_local_start = 1; 
        i_local_end = nx_local + 1;
@@ -363,7 +376,10 @@ Module OutputParaView
        j_local_start = 1; 
        j_local_end = Ny;  
    
-     if(npz == 0) then
+     if(npz0 == 1) then
+       k_local_start = 1
+       k_local_end = nz_local
+     else if(npz == 0) then
        global_Kend   = global_Kend + 1; 
        k_local_start = 1; 
        k_local_end = nz_local + 1;    
@@ -382,8 +398,8 @@ Module OutputParaView
       i_local_end = nx_local; 
       j_local_start = 1; 
       j_local_end = Ny; 
-      k_local_start = 1; 
-      k_local_end = nz_local+1;
+      k_local_start = 1;
+      k_local_end = nz_local;
     endif
    
     write(filename_output_vts,'("RESU/RESU_Part_",I8.8,"_",I5.5,".vts")')OutputFileNo,myid
@@ -532,7 +548,10 @@ Module OutputParaView
     
     if( if_parallel) then  
      !Output the VTS files, we have 9 cases, we need to handle all the things
-     if(npx == 0) then
+     if(npx0 == 1) then
+       i_local_start = 1
+       i_local_end = nx_local
+     else if(npx == 0) then
        global_Iend   = global_Iend + 1;   
        i_local_start = 1; 
        i_local_end = nx_local + 1;
@@ -550,7 +569,10 @@ Module OutputParaView
        j_local_start = 1; 
        j_local_end = 2*Ny-1;  
    
-     if(npz == 0) then
+     if(npz0 == 1) then
+       k_local_start = 1
+       k_local_end = nz_local
+     else if(npz == 0) then
        global_Kend   = global_Kend + 1; 
        k_local_start = 1; 
        k_local_end = nz_local + 1;    
@@ -618,7 +640,10 @@ Module OutputParaView
     
     if( if_parallel) then  
      !Output the VTS files, we have 9 cases, we need to handle all the things
-     if(npx == 0) then
+     if(npx0 == 1) then
+       i_local_start = 1
+       i_local_end = nx_local
+     else if(npx == 0) then
        global_Iend   = global_Iend + 1;   
        i_local_start = 1; 
        i_local_end = nx_local + 1;
@@ -636,7 +661,10 @@ Module OutputParaView
        j_local_start = 1; 
        j_local_end = 2*Ny-1;  
    
-     if(npz == 0) then
+     if(npz0 == 1) then
+       k_local_start = 1
+       k_local_end = nz_local
+     else if(npz == 0) then
        global_Kend   = global_Kend + 1; 
        k_local_start = 1; 
        k_local_end = nz_local + 1;    
@@ -730,7 +758,9 @@ Module OutputParaView
             global_kend   = k_offset(kc) + k_nn(kc) - 1;
 
           if(If_parallel) then 
-           if(ic == 0 ) then
+           if(npx0 == 1) then
+             global_Iend = i_offset(ic) + i_nn(ic) - 1
+           else if(ic == 0 ) then
              global_Iend   = global_Iend + 1;
            elseif(ic == npx0 - 1) then
              global_Istart = global_Istart - 1;  
@@ -739,7 +769,9 @@ Module OutputParaView
              global_Iend   = global_Iend + 1;  
            endif
 
-           if(kc == 0 ) then
+           if(npz0 == 1) then
+             global_Kend = k_offset(kc) + k_nn(kc) - 1
+           else if(kc == 0 ) then
              global_Kend   = global_Kend + 1; 
            elseif(kc == npz0 - 1) then
              global_Kstart = global_Kstart - 1;
@@ -835,7 +867,7 @@ Module OutputParaView
           if(If_parallel) then 
            if(ic == 0 ) then
              global_Istart = global_Istart - 1;
-             global_Iend   = global_Iend  ;  
+             global_Iend   = global_Iend  ;
            elseif(ic == npx0 - 1) then
              global_Istart = global_Istart - 1;  
              global_Iend   = global_Iend;
@@ -845,10 +877,10 @@ Module OutputParaView
            endif
   
            if(kc == 0 ) then
-             global_Kend   = global_Kend   + 1; 
+             global_Kend   = global_Kend   + 1;
            elseif(kc == npz0 - 1) then
              global_Kstart = global_Kstart - 1;
-             global_Kend   = global_Kend   + 1; 
+             global_Kend   = global_Kend   + 1;
            else
              global_Kstart = global_Kstart - 1;
              global_Kend   = global_Kend   + 1; 
@@ -935,7 +967,9 @@ Module OutputParaView
             global_kend   = k_offset(kc) + k_nn(kc) - 1;
 
           if(If_parallel) then 
-           if(ic == 0 ) then
+           if(npx0 == 1) then
+             global_Iend = i_offset(ic) + i_nn(ic) - 1
+           else if(ic == 0 ) then
              global_Iend   = global_Iend + 1;  
            elseif(ic == npx0 - 1) then
              global_Istart = global_Istart - 1;  
@@ -944,7 +978,9 @@ Module OutputParaView
              global_Iend   = global_Iend + 1;  
            endif
 
-           if(kc == 0 ) then
+           if(npz0 == 1) then
+             global_Kend = k_offset(kc) + k_nn(kc) - 1
+           else if(kc == 0 ) then
              global_Kend   = global_Kend + 1; 
            elseif(kc == npz0 - 1) then
              global_Kstart = global_Kstart - 1;
@@ -1036,7 +1072,9 @@ Module OutputParaView
             global_kend   = k_offset(kc) + k_nn(kc) - 1;
 
           if(If_parallel) then 
-           if(ic == 0 ) then
+           if(npx0 == 1) then
+             global_Iend = i_offset(ic) + i_nn(ic) - 1
+           else if(ic == 0 ) then
              global_Iend   = global_Iend + 1;  
            elseif(ic == npx0 - 1) then
              global_Istart = global_Istart - 1;  
@@ -1054,7 +1092,9 @@ Module OutputParaView
            !  global_Jend   = global_Jend + 1; 
            !endif
 
-           if(kc == 0 ) then
+           if(npz0 == 1) then
+             global_Kend = k_offset(kc) + k_nn(kc) - 1
+           else if(kc == 0 ) then
              global_Kend   = global_Kend + 1; 
            elseif(kc == npz0 - 1) then
              global_Kstart = global_Kstart - 1;
@@ -1220,7 +1260,7 @@ Module OutputParaView
        write(1231) trim(adjustl(xml_part))
      !write(*,*)"write xx,yy,zz"
        write(1231) "_"
-       write(1231) 3*size_real*int(gridsize_64,int64_kind)
+      write(1231) 3*int(gridsize_64,int64_kind)
        icounts = 1
        do k = k_local_start,k_local_end
          do j = j_local_start,j_local_end
@@ -1437,7 +1477,7 @@ Module OutputParaView
        write(1231) trim(adjustl(xml_part))
      !write(*,*)"write xx,yy,zz"
        write(1231) "_"
-       write(1231) 3*size_real*int(gridsize_64,int64_kind)
+      write(1231) 3*int(gridsize_64,int64_kind)
        icounts = 1
        do k = k_local_start,k_local_end
          do j = j_local_start,j_local_end
@@ -1629,7 +1669,7 @@ Module OutputParaView
        write(1231) trim(adjustl(xml_part))
      !write(*,*)"write xx,yy,zz"
        write(1231) "_"
-       write(1231) 3*size_real*int(gridsize_64,int64_kind)
+      write(1231) 3*int(gridsize_64,int64_kind)
        icounts = 1
        do k = k_local_start,k_local_end
          do j = j_local_start,j_local_end
@@ -1796,7 +1836,7 @@ Module OutputParaView
        write(1231) trim(adjustl(xml_part))
      !write(*,*)"write xx,yy,zz"
        write(1231) "_"
-       write(1231) 3*size_real*int(gridsize_64,int64_kind)
+      write(1231) 3*int(gridsize_64,int64_kind)
        icounts = 1
        do k = k_local_start,k_local_end
          do j = j_local_start,j_local_end
@@ -2239,7 +2279,7 @@ Module OutputParaView
        write(1231) trim(adjustl(xml_part))
      !write(*,*)"write xx,yy,zz"
        write(1231) "_"
-       write(1231) 3*size_real*int(gridsize_64,int64_kind)
+      write(1231) 3*int(gridsize_64,int64_kind)
        icounts = 1
        do k = k_local_start,k_local_end
          do j = j_local_start,j_local_end
