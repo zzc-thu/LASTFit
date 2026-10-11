@@ -24,6 +24,7 @@ planar fast-acoustic forcing.
 - [Configuration](Config.cfg): runtime namelist.
 - [Grid](grid/): one-piece reference grid.
 - [Restart](restart/): one nonlinear flow/shock file pair.
+- [Output](output/README.md): representative nonlinear field and runtime paths.
 - [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run
@@ -59,7 +60,7 @@ cp "$base_dir"/SF_Results*.shksfg "$run_dir/RESU_STEADY/"
 Nonlinear fields and restarts are written to `RESU/`; perturbation fields are
 written to `Pert/` at the configured cadence.
 Copy checkpoint `.time` files into `RESU/` when continuing an unsteady run.
-Without time metadata, legacy files are treated as a warm start at zero time
+Without time metadata, checkpoint files are treated as a warm start at zero time
 and the solver prints a warning.
 
 ## Data Scope

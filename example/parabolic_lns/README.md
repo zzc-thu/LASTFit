@@ -24,6 +24,7 @@ using the automatic-differentiation-generated linearized Navier-Stokes solver.
 - [Configuration](Config.cfg): runtime namelist.
 - [Grid](grid/): one-piece reference grid.
 - [Restart](restart/): one nonlinear base-flow/shock file pair.
+- [Output](output/README.md): representative linearized field and runtime paths.
 - [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run
@@ -53,10 +54,10 @@ is disabled. Linearized fields and perturbation restarts are written to
 For this analysis, `LNS_dt=6e-6` controls integration; `FixedDeltaTime` and
 the nonlinear CFL ramp do not set the LNS time step. Perturbation continuation
 requires all four saved time levels, `IterationNumber.dat`, and
-`RestartMetadata.dat`, in addition to the steady base flow. New metadata
+`RestartMetadata.dat`, in addition to the steady base flow. The metadata
 record the next step, `LNS_dt`, grid and MPI partition. Incompatible or
-metadata-free legacy histories are rejected; never fabricate metadata for
-an archive without first verifying its original settings. Keep the base
+metadata-free histories are rejected. Metadata must match the calculation
+that produced the checkpoint. Keep the base
 flow and forcing parameters unchanged as well.
 
 ## Data Scope

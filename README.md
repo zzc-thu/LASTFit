@@ -7,7 +7,6 @@
 | |___ / ___ \ ___) || | |  _| | | |_
 |_____/_/   \_\____/ |_| |_|   |_|\__|
 
-Version 0.1.0
 LAST Group, Tsinghua University
 Developed by Zhichao Zhu & Youcheng Xi
 ```
@@ -42,7 +41,8 @@ compiler options, isolated run directories, and restart staging.
 
 Each case contains a configuration, reference grid, and restart or base-flow
 inputs. See the [case index](example/README.md) for data scope.
-Generated results and postprocessed datasets are not distributed in this repository.
+Representative solver output is supplied in `output/` for field inspection.
+Postprocessed spectra, harmonic maps and plotting datasets are not distributed.
 
 Follow the commands in each case README to copy the configuration and required
 restart or base-flow inputs into a separate run directory and launch MPI.
@@ -55,7 +55,7 @@ Consult the verification scope before interpreting numerical results.
 - [Verification status](docs/verification.md)
 - [Citation metadata](CITATION.cff)
 
-The source version is 0.1.0. LASTFit is distributed under the
+LASTFit is distributed under the
 [BSD-3-Clause license](LICENSE). Record the exact commit when using the code.
 Part I covers a calorically perfect gas. Five-species and eleven-species models
 and multigrid extensions are planned for Part II, not included here.

@@ -21,6 +21,7 @@ four-rank checkpoint and reference grid.
 
 - [Grids](grid/): separate compact steady and unsteady reference grids.
 - [Restart](restart/): four-rank flow/shock checkpoint for the compact setup.
+- [Output](output/README.md): representative compact steady field and runtime paths.
 - [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run
@@ -51,9 +52,9 @@ cp "$case_dir"/restart/unsteady/SF_Results*.shksfg "$run_dir/RESU_STEADY/"
 For compact continuation, copy `restart/unsteady/*.flowsfg` and
 `restart/unsteady/*.shksfg` into the staged `RESU/` directory, then set
 `IF_Continue_Calculate=1` in the staged configuration. Keep `npx0=2` and
-`npz0=2`. The supplied historical checkpoint has no time metadata and is
-only a warm start, not a time-continuous acoustic restart. New checkpoints
-also write per-rank `.time` files; copy those files with the flow/shock files.
+`npz0=2`. The supplied checkpoint has no time metadata and is
+only a warm start, not a time-continuous acoustic restart. For time-continuous
+continuation, copy per-rank `.time` files with the flow/shock files.
 
 For the one-rank steady calculation, stage `Config_steady.cfg` as
 `Config.cfg` in a separate run directory and launch one MPI rank:
@@ -74,9 +75,10 @@ cp "$case_dir/Config_steady.cfg" "$run_dir/Config.cfg"
 
 ## Data Scope
 
-Only the compact reference grids and matching restart/base-flow inputs are
-distributed. Generated flow fields and postprocessed spectra or harmonic maps
-are excluded. The compact example does not reproduce the production-grid spectra.
+The compact reference grids, matching restart/base-flow inputs and a
+representative compact steady field are distributed. Postprocessed spectra
+and harmonic maps are excluded. The compact example does not reproduce the
+production-grid spectra.
 
 Iteration limits are research-run settings, not a short runtime guarantee.
 See the [verification status](../../docs/verification.md).

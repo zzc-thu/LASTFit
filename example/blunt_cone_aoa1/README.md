@@ -23,6 +23,7 @@ Mach 6 flow over a spherical-nosed cone.
 - [Configuration](Config.cfg): runtime namelist.
 - [Grid](grid/): eight-piece reference grid.
 - [Restart](restart/): eight flow/shock file pairs for optional continuation.
+- [Output](output/README.md): representative steady field and runtime paths.
 - [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run

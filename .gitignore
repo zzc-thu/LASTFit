@@ -16,7 +16,16 @@ src/Pert/
 run/
 
 # Generated example results and Python caches
-example/*/output/
+example/*/output/*
+!example/*/output/README.md
+!example/*/output/Result_*.pvts
+!example/*/output/RESU_Part_*.vts
+!example/*/output/LNSResults_*.pvts
+!example/*/output/LNSResults_Part_*.vts
+!example/hifire5_acoustic/output/steady/
+example/hifire5_acoustic/output/steady/*
+!example/hifire5_acoustic/output/steady/Result_*.pvts
+!example/hifire5_acoustic/output/steady/RESU_Part_*.vts
 __pycache__/
 *.pyc
 
