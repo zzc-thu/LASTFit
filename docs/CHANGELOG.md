@@ -35,6 +35,9 @@
 
 ### Documentation
 
+- Recorded passing original-grid short runs for all six active configurations,
+  including ten-step blunt-cone and HIFiRE acoustic runs after extending the
+  bounded test under severe memory pressure; retained accuracy-validation limits.
 - Concise repository overview with a linked example index and source map.
 - Complete Bash staging commands for the primary configurations and the
   HIFiRE compact steady setup.

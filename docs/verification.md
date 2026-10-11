@@ -38,20 +38,26 @@ shortened iteration limits and output intervals:
 | Circular cylinder | 8 | 10 | Finite fields and valid VTK blocks/references |
 | Parabolic nonlinear | 1 | 10 | Finite fields and valid VTK blocks/references |
 | Parabolic LNS | 1 | 100 | Finite fields and all four stored history levels |
-| Blunt cone, original grid | 8 | 1 | Finite fields and valid VTK blocks/references |
-| HIFiRE acoustic, original grid | 4 | 2 | Finite fields and valid VTK blocks/references |
+| Blunt cone, original grid | 8 | 10 | Finite fields and valid VTK blocks/references |
+| HIFiRE acoustic, original grid | 4 | 10 | Finite fields and valid VTK blocks/references |
 | HIFiRE compact steady | 1 | 10 | Finite fields and valid VTK blocks/references |
 
 Nonlinear output density, pressure and temperature were checked for positive
 values. A reduced 60 x 21 x 40 blunt-cone test completed ten steps. It is a
 separate startup test, not a grid-convergence study.
 
-Original-grid ten-step blunt-cone and HIFiRE acoustic tests did not complete
-under the bounded test on this memory-constrained workstation. The blunt-cone
-test was stopped after one accepted step during severe paging; HIFiRE reached
-four accepted steps before timeout. Shorter completed runs do not replace
-these unfinished ten-step tests. No production memory or runtime guarantee
-is inferred from the short runs.
+All six active configurations now pass the short-run checks above, including
+normal process exit, completed solver steps and finite final fields. Nonlinear
+unsteady checkpoints include matching physical-time metadata on every rank;
+LNS checks include all four saved history levels. These are runtime checks,
+not converged benchmark comparisons.
+
+Earlier 180-second tests were incomplete under severe memory pressure.
+Repeating the original-grid blunt-cone and HIFiRE acoustic tests sequentially
+with a 30-minute limit completed ten steps in 662.36 s and 1127.41 s,
+respectively. The grid, MPI partition and physical parameters were unchanged.
+These elapsed times describe a heavily loaded 16 GB Windows workstation;
+they are not performance benchmarks or production-runtime guarantees.
 
 ## LNS Repairs and Regression
 
