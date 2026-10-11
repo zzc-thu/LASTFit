@@ -3,8 +3,8 @@
 [Overview](../README.md) | [Build and execution](../docs/usage.md) | [Verification](../docs/verification.md)
 
 The five examples cover steady base flows, nonlinear acoustic response, and
-AD-LNS evolution. Case data are representative solver records, not complete
-reproductions of every manuscript figure.
+AD-LNS evolution. Only configurations, reference grids and restart or base-flow
+inputs are supplied. Results are generated in isolated run directories.
 
 ## Case Index
 
@@ -28,7 +28,6 @@ case/
   Config.cfg       Runtime namelist
   grid/            Reference VTK grid
   restart/         Flow and shock restart data
-  output/          Representative reference fields
   README.md        Parameters, run commands, and data scope
   SHA256SUMS       Configuration and numerical-file checksums
 ```
@@ -40,9 +39,9 @@ from this reference-data layout; use the complete commands in the case READMEs.
 
 Each manifest covers the supplied configuration and numerical data, excluding
 documentation. Run `sha256sum -c SHA256SUMS` from the selected case directory.
-Open PVTS headers, with every referenced piece available, to inspect fields.
+Open grid PVTS headers, with every referenced piece available, to inspect meshes.
 
-The MPI decomposition must match the restart. Compact grids and representative
-outputs cannot replace production-grid time histories for convergence or
-spectral analysis. All examples retain their original numerical data; only
-the staged configuration and runtime outputs should be modified during a run.
+The MPI decomposition must match the restart. The supplied inputs are not
+complete manuscript reproduction datasets. Preserve them and modify only
+staged copies during a run. Generated fields, spectra, harmonic maps and
+plotting datasets are excluded from this repository.

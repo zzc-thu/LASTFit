@@ -28,12 +28,15 @@
 
 - MPI-parallel, perfect-gas shock-fitting source with steady, nonlinear unsteady,
   and AD-generated LNS modes.
-- Five examples containing configurations, reference grids, restart data, and
-  representative outputs.
+- Five examples containing configurations, reference grids and restart/base-flow
+  inputs; generated fields and postprocessed datasets are excluded.
 - GNU Make configuration with selectable compiler and external BLAS/LAPACK.
 - LASTFit startup banner, citation metadata, and existing license file.
 
 ### Documentation
+
+- Remove stored result datasets and their documentation; update example
+  manifests and ignore generated example output directories.
 
 - Recorded passing original-grid short runs for all six active configurations,
   including ten-step blunt-cone and HIFiRE acoustic runs after extending the

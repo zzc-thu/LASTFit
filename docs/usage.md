@@ -126,14 +126,13 @@ case/
   Config.cfg
   grid/
   restart/
-  output/
   README.md
   SHA256SUMS
 ```
 
 The solver generates its grid from `Config.cfg`. The PVTS files in `grid/`
-are reference artifacts, not runtime mesh inputs. The case `output/` directory
-stores representative fields and is not a live output destination.
+are reference artifacts, not runtime mesh inputs. Generated fields and
+postprocessed datasets are not stored in the example directories.
 
 | Runtime directory | Contents |
 |---|---|

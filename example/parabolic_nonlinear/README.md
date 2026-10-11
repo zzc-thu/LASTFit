@@ -24,7 +24,6 @@ planar fast-acoustic forcing.
 - [Configuration](Config.cfg): runtime namelist.
 - [Grid](grid/): one-piece reference grid.
 - [Restart](restart/): one nonlinear flow/shock file pair.
-- [Output](output/): representative unsteady field.
 - [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run

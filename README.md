@@ -40,9 +40,9 @@ compiler options, isolated run directories, and restart staging.
 | [Blunt cone at incidence](example/blunt_cone_aoa1/) | Three-dimensional base flow | 8 |
 | [HIFiRE-5-type elliptic cone](example/hifire5_acoustic/) | Steady / nonlinear acoustic response | 1 / 4 |
 
-Each case contains a configuration, reference grid, restart data, and
-representative outputs. See the [case index](example/README.md) for data scope.
-The examples do not include all manuscript production histories.
+Each case contains a configuration, reference grid, and restart or base-flow
+inputs. See the [case index](example/README.md) for data scope.
+Generated results and postprocessed datasets are not distributed in this repository.
 
 Check supplied inputs with Python 3.9+ and NumPy (not solver dependencies):
 

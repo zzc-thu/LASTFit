@@ -24,7 +24,6 @@ using the automatic-differentiation-generated linearized Navier-Stokes solver.
 - [Configuration](Config.cfg): runtime namelist.
 - [Grid](grid/): one-piece reference grid.
 - [Restart](restart/): one nonlinear base-flow/shock file pair.
-- [Output](output/): representative LNS field.
 - [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run

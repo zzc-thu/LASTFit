@@ -23,7 +23,6 @@ operations remain active.
 - [Configuration](Config.cfg): runtime namelist.
 - [Grid](grid/): eight-piece reference grid.
 - [Restart](restart/): eight flow/shock file pairs.
-- [Output](output/): distributed steady field.
 - [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run

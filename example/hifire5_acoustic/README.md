@@ -26,7 +26,6 @@ is stored separately as a historical record, not a runnable example.
 
 - [Grids](grid/): separate compact steady and unsteady reference grids.
 - [Restart](restart/): four-rank flow/shock checkpoint for the compact setup.
-- [Output](output/): compact steady field and production-grid wall-harmonic field.
 - [Checksums](SHA256SUMS): configuration and numerical-file integrity.
 
 ## Run
@@ -81,10 +80,9 @@ cp "$case_dir/Config_steady.cfg" "$run_dir/Config.cfg"
 
 ## Data Scope
 
-The wall-harmonic field supports inspection of the manuscript amplitude and
-phase maps. Full production-grid base-flow fields, unsteady histories, and
-three-dimensional harmonic volumes are not distributed in Git. The compact
-example does not reproduce the production-grid spectra.
+Only the compact reference grids and matching restart/base-flow inputs are
+distributed. Generated flow fields and postprocessed spectra or harmonic maps
+are excluded. The compact example does not reproduce the production-grid spectra.
 
 Iteration limits are research-run settings, not a short runtime guarantee.
 See the [verification status](../../docs/verification.md).
