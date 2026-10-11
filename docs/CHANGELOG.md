@@ -6,6 +6,16 @@
 
 ### Software and Examples
 
+- Initialize LNS workspaces and evaluate boundary operators on owned cells
+  before halo exchange; remove undefined exterior-geometry arithmetic.
+- Keep linear forcing on the fixed base-flow shock with unforced primal
+  inputs, and supply consistent derivatives for all four forcing modes.
+- Correct the LNS interpolation fallback and the singular-grid RK4 updates.
+- Allocate implicit matrices and Krylov storage only for the solvers that
+  use them; remove the fixed per-rank buffered-output allocation.
+- Correct planar MPI gathering and missing Fortran module prerequisites.
+- Add finite-history, restart, partition and amplitude-scaling checks with
+  synthetic regression tests; distinguish these from accuracy validation.
 - Recovered the complete compact nonlinear checkpoint without altering its
   original flow or shock values; supplied the missing coordinate records.
 - Corrected the compact HIFiRE MPI partition and base-flow staging commands.

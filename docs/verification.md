@@ -2,148 +2,117 @@
 
 [Overview](../README.md) | [Build and execution](usage.md) | [Examples](../example/README.md)
 
-## Repository Checks
-
-The following checks were performed for this documentation revision:
-
-| Check | Result |
-|---|---|
-| Example SHA-256 manifests | Included configuration and numerical files match their checksums |
-| Distributed VTK references | Every PVTS piece reference resolves to a supplied file |
-| Configuration/documentation review | Grid sizes, primary MPI counts, continuation modes, and restart paths checked against configuration and source |
-| Documentation navigation | Local Markdown links checked for existing targets |
-| Documented Bash commands | Syntax checked with Bash; commands not executed as solver runs |
-
-File-integrity checks do not establish the accuracy of the solver. A supplied
-reference field is not a validated regression tolerance.
-
-## Numerical and Runtime Scope
-
-The manuscript reports benchmark comparisons and a small-amplitude
-LNS/nonlinear response comparison. It does not report observed grid or
-time-step convergence order, complete AD Taylor tests, or MPI performance
-measurements. The HIFiRE example demonstrates nonlinear three-dimensional
-acoustic response, not a controlled three-dimensional LNS verification.
-
-The Linux Makefile and run instructions have been reviewed but have not been
-compiled or executed in this revision environment. No runtime, memory,
-restart-portability, or supported-compiler guarantee is inferred from the
-presence of configuration and reference data.
-
-## Local Restart Repairs (2026-10-11)
-
-The source was compiled with Intel Fortran Classic 2021.11 and Intel MPI
-2021.11 on Windows using a separate test harness, not the Linux Makefile.
-A six-step nonlinear diagnostic and a three-step run continued to step six
-agreed within 2.4e-22 in the interior conservative variables and 1.1e-19 in
-shock velocity; shock height and saved coordinates were identical. Physical
-time metadata were identical. Exterior halos were excluded from that
-comparison because some contain non-finite values.
-
-The diagnostic used the complete parabolic LNS base-flow checkpoint as a
-nonlinear initial condition. It did not use the distributed nonlinear
-checkpoint and is not manuscript validation. See the later data recovery.
-
-The HIFiRE compact configuration now uses the checkpoint-compatible `2 x 2`
-partition. The supplied checkpoint was traced to an archived steady-base-flow
-snapshot with identical files and can be staged into `RESU_STEADY/`.
-The parabolic LNS base flow passes file-shape and interior positivity checks,
-but the short LNS run produces non-finite perturbations. LNS numerical
-correctness and time-continuous LNS restart have not been established.
-
-These checks do not establish grid/time convergence, AD consistency, Linux
-support, or production-case performance.
-
-After the repairs, a ten-step cylinder run on eight ranks exited normally;
-16 VTK files had valid block lengths and finite values. A ten-step LNS run
-on one rank also exited normally and saved next iteration 11, but its VTK
-field contained 456,512 non-finite values. All 310,590 values in its raw t0
-perturbation conservative record were non-finite. That is a failed numerical
-test despite successful process cleanup and checkpoint metadata output.
-
-## External Data Recovery (2026-10-11)
-
-The complete parabolic nonlinear checkpoint was recovered from an archive.
-Its conservative-variable record and shock file exactly match the previously
-distributed single-record checkpoint; all three coordinate records are now
-included. The compact parabolic LNS base flow has identical wall coordinates
-and nominal physical settings and is shared for perturbation output.
-With the recovered nonlinear checkpoint, a ten-step compact run exited
-normally and both output VTK files passed block-length and finite-value
-checks. This is a startup/output test, not convergence or spectral validation.
-
-A 192-rank HIFiRE checkpoint was located externally and passed record-size
-and interior positivity checks. It is not added to Git and does not resolve
-the historical geometry-numbering mismatch in the E4 configuration.
-Archived LNS histories contain finite interior perturbations, but their VTK
-time series use different grid sizes. They are not a verified continuation
-package for the current source or a substitute for the manuscript dataset.
-
-## Current Repair Checks (2026-10-11)
+## Inputs and Build
 
 Six active configurations and 44 flow/shock files pass sequential-record,
-interior finite-value and density/pressure positivity checks. Stored exterior
-halos in cylinder and HIFiRE data still include non-finite values; original
-numerical data have not been replaced with invented values. The incompatible
-E4 configuration is now isolated under `docs/archive/`.
+record-shape, interior finite-value and density/pressure positivity checks.
+Example SHA-256 manifests and supplied PVTS references have been checked.
+The input checker has six synthetic regression tests. These checks establish
+input integrity, not numerical accuracy.
 
-The input-check tool passes six synthetic regression tests covering valid
-records, missing coordinates, missing shock files, non-finite interior flow,
-non-positive pressure and corrupt record trailers. These are input checks,
-not accuracy or convergence tests.
+The recovered parabolic nonlinear checkpoint includes all four required
+records. The HIFiRE acoustic checkpoint uses its matching `2 x 2` partition.
+The incompatible historical E4 configuration is isolated under `docs/archive/`.
+Some original nonlinear checkpoints have non-finite physical exterior halos;
+these are distinguished from owned cells. Original numerical data have not
+been replaced with manufactured values.
 
-The current compact nonlinear ten-step run exits normally; two VTK files
-have valid block lengths and finite values. Before the viscous-mass-flux fix
-below, rebuilding loaded LNS base-flow metrics did not resolve its numerical
-failure: the first detected bad
-interior cell is (63,51,1) on rank 0 at step 4, on the shock boundary.
-New guards stop the run without saving the invalid perturbation checkpoint.
-That pre-fix run was a failing diagnostic, not a validated regression.
+All 37 compilation units were built from an empty directory using Intel
+Fortran Classic 2021.11 and Intel MPI 2021.11 on Windows. A separate harness
+reads the Makefile prerequisites; missing Fortran module dependencies have
+been corrected. The Linux Makefile itself has not been executed here.
 
-New LNS restart metadata verify the time step, grid, MPI partition and next
-iteration. Legacy histories without verified metadata are rejected. This
-safety check is not proof of a passing time-continuous LNS restart.
-Four runtime guard regressions pass: missing metadata, wrong time step,
-wrong grid and non-finite saved history are all rejected with nonzero exit.
+Unused implicit flux matrices are no longer allocated for RK4 or LNS;
+the Krylov basis is allocated only for GMRES. The CFL diagonal remains
+allocated for every solver. Ordered blocking sends replace buffered planar
+output, removing a fixed 800 MB allocation per MPI rank. This is an allocation
+change, not a measured parallel-performance result.
 
-## LNS Residual Diagnosis (2026-10-11)
+## Runtime Checks
 
-The first failure occurs in the tangent residual, before the step-4 shock
-boundary update. At cell (63,51,1), only the mass residual first becomes NaN;
-the preceding shock-boundary evaluations and forcing derivatives are finite.
+The final test binary was used with the distributed settings except for
+shortened iteration limits and output intervals:
 
-`Complete_Flux_un_d.f90` allocated the transformed viscous fluxes and their
-tangents without initializing component 1. The transformation loop filled
-only components 2 through 5, while differentiation and residual assembly
-read all five. Undefined mass flux contaminated the tangent mass residual
-and then the shock acceleration. Component 1 is now explicitly zero in all
-six arrays. The same correction is included in the nonlinear reference
-routine `Complete_Flux_un.f90`; that reference is not an active compilation
-unit in the supplied Makefile.
+| Configuration | MPI ranks | Completed steps | Output check |
+|---|---:|---:|---|
+| Circular cylinder | 8 | 10 | Finite fields and valid VTK blocks/references |
+| Parabolic nonlinear | 1 | 10 | Finite fields and valid VTK blocks/references |
+| Parabolic LNS | 1 | 100 | Finite fields and all four stored history levels |
+| Blunt cone, original grid | 8 | 1 | Finite fields and valid VTK blocks/references |
+| HIFiRE acoustic, original grid | 4 | 2 | Finite fields and valid VTK blocks/references |
+| HIFiRE compact steady | 1 | 10 | Finite fields and valid VTK blocks/references |
 
-Using Intel Fortran Classic 2021.11 and Intel MPI 2021.11 on Windows, the
-compact one-rank case reached 10 and 100 steps with the original LNS time
-step and forcing amplitude. Final VTK blocks and piece references are valid,
-and output fields and all four interior history levels are finite. A ten-step
-zero-forcing run retained exactly zero interior flow and shock perturbations.
+Nonlinear output density, pressure and temperature were checked for positive
+values. A reduced 60 x 21 x 40 blunt-cone test completed ten steps. It is a
+separate startup test, not a grid-convergence study.
 
-Two limitations remain. External physical-boundary ghost storage contains
-non-finite values; it is checked separately from the interior. Restarting a
-ten-step history to step 20 produces a maximum interior absolute difference
-of approximately 1.12e-12 relative to uninterrupted integration. This exceeds
-the diagnostic threshold of 1e-12 and is not recorded as a strict restart pass.
-The result was repeated with identical solver binaries.
+Original-grid ten-step blunt-cone and HIFiRE acoustic tests did not complete
+under the bounded test on this memory-constrained workstation. The blunt-cone
+test was stopped after one accepted step during severe paging; HIFiRE reached
+four accepted steps before timeout. Shorter completed runs do not replace
+these unfinished ten-step tests. No production memory or runtime guarantee
+is inferred from the short runs.
 
-The preparation tool still requires `--allow-unverified`. These short runs
-do not establish long-time stability, production-grid reproduction, AD Taylor
-consistency, grid/time convergence, three-dimensional LNS coupling, or Linux
-runtime compatibility. No original reference output has been overwritten.
+## LNS Repairs and Regression
+
+An initial failure was traced to uninitialized transformed viscous mass
+fluxes. Further diagnostics found incomplete workspace initialization,
+boundary formulas evaluated on undefined exterior metric storage, forcing
+evaluated on the perturbed rather than fixed base-flow shock, and forcing
+included in both primal and tangent inputs. These paths have been corrected.
+Boundary formulas evaluate owned cells before halo exchange; stencil halo
+communication is retained.
+
+All four forcing modes now have consistent state and time-derivative inputs.
+The interpolation search has a defined upper-end fallback. Nonlinear RK4
+uses the same mode definitions and the appropriate singular-grid update.
+
+Checks on the supplied 81 x 51 x 8 parabolic base flow include:
+
+| Check | Observed result |
+|---|---|
+| LNS stored history | All four levels, including exterior storage, finite |
+| Zero forcing | Exactly zero interior flow and shock perturbations |
+| Amplitude scaling | Full response minus twice half-amplitude response: maximum absolute difference 2.43e-15 |
+| Restart | Ten steps continued to twenty match uninterrupted twenty-step history exactly |
+| MPI partition | `2 x 1` and `1 x 2` match single-rank owned histories exactly |
+| Forcing modes | Fast acoustic, slow acoustic, entropy and vortical modes complete ten-step LNS and nonlinear runs with finite fields |
+| Diagnostic build | Owned-cell LNS passes bounds checks and floating-point traps enabled after base-flow loading |
+| Restart guards | Missing metadata, wrong time step, wrong grid and non-finite history are rejected |
+
+The previous ghost-storage and strict-restart failures are superseded by
+these repairs, not passing results for unmodified earlier commits.
+Record the source commit with every run.
+
+`tools/check_lns_results.py` requires NumPy, audits every stored history record
+and compares restart, partition and amplitude-scaling results. Five synthetic
+regression tests cover its record checks and comparisons. For example:
+
+```bash
+python tools/check_lns_results.py run/parabolic_lns/LNSResults
+python tools/check_lns_results.py run/resumed/LNSResults --reference run/continuous/LNSResults
+python tools/test_check_lns_results.py
+```
+
+## Remaining Validation
+
+The preparation tool retains `--allow-unverified` for LNS because grid/time
+convergence, complete AD Taylor consistency, long-time stability and
+production-grid manuscript reproduction remain unverified. The compact
+parabolic example is not the 181 x 161 x 8 production comparison dataset.
+
+The MPI checks use spanwise-homogeneous base flow and forcing; they do not
+validate nonzero azimuthal-wavenumber three-dimensional LNS physics.
+Diagnostic floating-point traps apply to the LNS phase, not all initialization
+paths. Short-run consistency is not an AD Taylor test. The manuscript HIFiRE
+result demonstrates nonlinear three-dimensional acoustic response, not a
+controlled three-dimensional LNS validation.
+
+No Linux runtime, cross-compiler checkpoint portability, converged benchmark
+accuracy or MPI scaling guarantee is inferred.
 
 ## Release Status
 
-Version 0.1.0 denotes the research snapshot in the citation metadata.
-No formal version tag, GitHub Release, or archival DOI is published by this
-documentation revision. Record the exact commit when using the source.
-
-The existing BSD-3-Clause license file is retained. A formal release remains
-separate from this documentation update and requires author approval.
+Version 0.1.0 denotes the source version in the citation metadata. No formal
+tag, GitHub Release or archival DOI is published by this update. The existing
+BSD-3-Clause license is retained. Record the exact commit when using the code.

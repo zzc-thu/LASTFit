@@ -11,7 +11,7 @@ parser.add_argument('case', choices=('circular_cylinder', 'parabolic_nonlinear',
 parser.add_argument('--run-dir', type=Path, required=True)
 parser.add_argument('--solver', type=Path, required=True)
 parser.add_argument('--steps', type=int, default=10, help='Last step for a new short run (default: 10)')
-parser.add_argument('--allow-unverified', action='store_true', help='Allow the LNS case with incomplete numerical and restart validation')
+parser.add_argument('--allow-unverified', action='store_true', help='Allow diagnostic LNS runs before convergence and AD consistency validation')
 args = parser.parse_args()
 repo = Path(__file__).resolve().parents[1]
 if args.case == 'parabolic_lns' and not args.allow_unverified:

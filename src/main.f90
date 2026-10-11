@@ -216,7 +216,11 @@ program SFSolver
           call IncreamentRK4_unsteady
           Time_new = Time_new + dT0
           !call test_complete_flux
-          call Calculate_Jaco
+          if(ModelType == 1) then
+            call Calculate_Jaco
+          else
+            call Singular_Calculate_Jaco
+          endif
           call Update_Variables
           if(mod(Iteration,StepsWriteData) == 0) then
           call Calculate_Pert(Iteration)

@@ -155,16 +155,7 @@ Module Runge_Kutta_4
     implicit none
     integer( kind=ik)::ic,jc,kc
     real( kind = rk ):: RK_dt
-    real( kind = rk ), dimension(:,:,:),   allocatable :: Rho_per,U_per,V_per,W_per,P_per
-    real( kind = rk ), dimension(:,:,:),   allocatable :: i_t,i_t_tau
     
-    allocate(Rho_per(1:nx_local,1:Ny,1:nz_local))
-    allocate(U_per(1:nx_local,1:Ny,1:nz_local))
-    allocate(V_per(1:nx_local,1:Ny,1:nz_local))
-    allocate(W_per(1:nx_local,1:Ny,1:nz_local))
-    allocate(P_per(1:nx_local,1:Ny,1:nz_local))
-    allocate(i_t(1:nx_local,1:Ny,1:nz_local))
-    allocate(i_t_tau(1:nx_local,1:Ny,1:nz_local))
     ! Calculate the increament  
      !if(MyId == 0 ) write(*,*)"Reading Iteration Number"
      !open(113,file='RESU/IterationNumber.dat',form='unformatted',status='old')
@@ -180,54 +171,7 @@ Module Runge_Kutta_4
    ! ================== 1st Step ==================
     CALL Calculate_Flux
 
-    jc = Ny;
-      do kc = 1,nz_local
-        do ic = 1,nx_local
-
-    if (Pert_Type .EQ. 1)then !fast 
-          i_t(ic,jc,kc) = cos(k_infty*((x_grid(ic,jc,kc)-1.d0) - C_inf * Time_old));
-      i_t_tau(ic,jc,kc) = -k_infty*(shockXtau(ic,kc)-C_inf)*sin(k_infty*((x_grid(ic,jc,kc)-1.d0)-C_inf * Time_old));
-       
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = epsilon * i_t(ic,jc,kc);
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;
-            P_per(ic,jc,kc)    = epsilon * mach_ref * gamma* i_t(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-           
-        Rho_pert_tau(ic,jc,kc) = epsilon * mach_ref * i_t_tau(ic,jc,kc);
-          U_pert_tau(ic,jc,kc) = epsilon * i_t_tau(ic,jc,kc);
-          V_pert_tau(ic,jc,kc) = 0.d0;
-          W_pert_tau(ic,jc,kc) = 0.d0;
-          P_pert_tau(ic,jc,kc) = epsilon * mach_ref * gamma * i_t_tau(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-            
-           Rho_free(ic,jc,kc)  = Rho_inf + Rho_per(ic,jc,kc);
-             U_free(ic,jc,kc)  = U_inf   + U_per(ic,jc,kc);
-             V_free(ic,jc,kc)  = V_inf   + V_per(ic,jc,kc);
-             W_free(ic,jc,kc)  = W_inf   + W_per(ic,jc,kc);
-             P_free(ic,jc,kc)  = P_inf   + P_per(ic,jc,kc);
-             T_free(ic,jc,kc)  = Gamma * Mach_Ref * Mach_Ref * P_free(ic,jc,kc) / Rho_free(ic,jc,kc);
-          elseif (Pert_Type .EQ. 2)then !slow
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = - epsilon * i_t(ic,jc,kc);
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;            
-            P_per(ic,jc,kc)    = epsilon * mach_ref * gamma* i_t(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-          elseif (Pert_Type .EQ. 3)then
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = 0.d0;
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;   
-            P_per(ic,jc,kc)    = 0.d0;
-          !if (Pert_Type .EQ. 4)then
-          else
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = 0.d0;
-            V_per(ic,jc,kc)    = epsilon * i_t(ic,jc,kc);
-            W_per(ic,jc,kc)    = 0.d0;            
-            P_per(ic,jc,kc)    = 0.d0;                
-          endif    
-        enddo
-      enddo
+    CALL Update_Unsteady_Freestream(Time_old)
       
     CALL Calculate_ShockAC3D_unsteady
     !call test_complete_flux(Iteration-1)
@@ -248,7 +192,11 @@ Module Runge_Kutta_4
           ShockH = ShockH_old + RK_dt * ShockV;
           ShockV = ShockV_RK1;
     !
-      CALL Calculate_Jaco
+      if(ModelType == 1) then
+        CALL Calculate_Jaco
+      else
+        CALL Singular_Calculate_Jaco
+      endif
       CALL Update_Variables
 !write(*,*)Ucons0
    ! ==============================================
@@ -256,54 +204,7 @@ Module Runge_Kutta_4
    ! ================== 2nd Step ==================
     CALL Calculate_Flux
 
-    jc = Ny;
-      do kc = 1,nz_local
-        do ic = 1,nx_local
-     
-    if (Pert_Type .EQ. 1)then !fast 
-          i_t(ic,jc,kc) = cos(k_infty*((x_grid(ic,jc,kc)-1.d0) - C_inf * Time_RK1));
-      i_t_tau(ic,jc,kc) = -k_infty*(shockXtau(ic,kc)-C_inf)*sin(k_infty*((x_grid(ic,jc,kc)-1.d0)-C_inf * Time_RK1));
-         
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = epsilon * i_t(ic,jc,kc);
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;
-            P_per(ic,jc,kc)    = epsilon * mach_ref * gamma* i_t(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-           
-          Rho_pert_tau(ic,jc,kc) = epsilon * mach_ref * i_t_tau(ic,jc,kc);
-            U_pert_tau(ic,jc,kc) = epsilon * i_t_tau(ic,jc,kc);
-            V_pert_tau(ic,jc,kc) = 0.d0;
-            W_pert_tau(ic,jc,kc) = 0.d0;
-            P_pert_tau(ic,jc,kc) = epsilon * mach_ref * gamma * i_t_tau(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-            
-          Rho_free(ic,jc,kc)   = Rho_inf + Rho_per(ic,jc,kc);
-            U_free(ic,jc,kc)   = U_inf   + U_per(ic,jc,kc);
-            V_free(ic,jc,kc)   = V_inf   + V_per(ic,jc,kc);
-            W_free(ic,jc,kc)   = W_inf   + W_per(ic,jc,kc);
-            P_free(ic,jc,kc)   = P_inf   + P_per(ic,jc,kc);
-          
-          elseif (Pert_Type .EQ. 2)then !slow
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = - epsilon * i_t(ic,jc,kc);
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;            
-            P_per(ic,jc,kc)    = epsilon * mach_ref * gamma* i_t(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-          elseif (Pert_Type .EQ. 3)then
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = 0.d0;
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;   
-            P_per(ic,jc,kc)    = 0.d0;
-          !if (Pert_Type .EQ. 4)then
-          else
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = 0.d0;
-            V_per(ic,jc,kc)    = epsilon * i_t(ic,jc,kc);
-            W_per(ic,jc,kc)    = 0.d0;            
-            P_per(ic,jc,kc)    = 0.d0;                
-          endif    
-        enddo
-      enddo
+    CALL Update_Unsteady_Freestream(Time_RK1)
     
     CALL Calculate_ShockAC3D_unsteady
 
@@ -324,61 +225,18 @@ Module Runge_Kutta_4
           ShockH = ShockH_old + RK_dt * ShockV;
           ShockV = ShockV_RK2;
     !
-      CALL Calculate_Jaco
+      if(ModelType == 1) then
+        CALL Calculate_Jaco
+      else
+        CALL Singular_Calculate_Jaco
+      endif
       CALL Update_Variables
    ! ==============================================
 
    ! ================== 3rd Step ==================
       CALL Calculate_Flux     ! Calculate the dUcons0
 !write(*,*)Time_RK2
-      jc = Ny;
-      do kc = 1,nz_local
-        do ic = 1,nx_local
-     
-    if (Pert_Type .EQ. 1)then !fast 
-          i_t(ic,jc,kc) = cos(k_infty*((x_grid(ic,jc,kc)-1.d0) - C_inf * Time_RK2));
-      i_t_tau(ic,jc,kc) = -k_infty*(shockXtau(ic,kc)-C_inf)*sin(k_infty*((x_grid(ic,jc,kc)-1.d0)-C_inf * Time_RK2));
-         
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = epsilon * i_t(ic,jc,kc);
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;
-            P_per(ic,jc,kc)    = epsilon * mach_ref * gamma* i_t(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-           
-          Rho_pert_tau(ic,jc,kc)= epsilon * mach_ref * i_t_tau(ic,jc,kc);
-            U_pert_tau(ic,jc,kc) = epsilon * i_t_tau(ic,jc,kc);
-            V_pert_tau(ic,jc,kc) = 0.d0;
-            W_pert_tau(ic,jc,kc) = 0.d0;
-            P_pert_tau(ic,jc,kc) = epsilon * mach_ref * gamma * i_t_tau(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-            
-          Rho_free(ic,jc,kc)   = Rho_inf + Rho_per(ic,jc,kc);
-            U_free(ic,jc,kc)   = U_inf   + U_per(ic,jc,kc);
-            V_free(ic,jc,kc)   = V_inf   + V_per(ic,jc,kc);
-            W_free(ic,jc,kc)   = W_inf   + W_per(ic,jc,kc);
-            P_free(ic,jc,kc)   = P_inf   + P_per(ic,jc,kc);
-          
-          elseif (Pert_Type .EQ. 2)then !slow
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = - epsilon * i_t(ic,jc,kc);
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;            
-            P_per(ic,jc,kc)    = epsilon * mach_ref * gamma* i_t(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-          elseif (Pert_Type .EQ. 3)then
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = 0.d0;
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;   
-            P_per(ic,jc,kc)    = 0.d0;
-          !if (Pert_Type .EQ. 4)then
-          else
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = 0.d0;
-            V_per(ic,jc,kc)    = epsilon * i_t(ic,jc,kc);
-            W_per(ic,jc,kc)    = 0.d0;            
-            P_per(ic,jc,kc)    = 0.d0;                
-          endif    
-        enddo
-      enddo
+      CALL Update_Unsteady_Freestream(Time_RK2)
       
       CALL Calculate_ShockAC3D_unsteady
 
@@ -399,61 +257,18 @@ Module Runge_Kutta_4
          ShockH = ShockH_old + RK_dt * ShockV;
          ShockV = ShockV_RK3;
 
-      CALL Calculate_Jaco
+      if(ModelType == 1) then
+        CALL Calculate_Jaco
+      else
+        CALL Singular_Calculate_Jaco
+      endif
       CALL Update_Variables
    ! ==============================================
 
    ! ================== 4th Step ==================
       CALL Calculate_Flux
 
-      jc = Ny;
-      do kc = 1,nz_local
-        do ic = 1,nx_local
-     
-    if (Pert_Type .EQ. 1)then !fast 
-          i_t(ic,jc,kc) = cos(k_infty*((x_grid(ic,jc,kc)-1.d0) - C_inf * Time_RK3));
-      i_t_tau(ic,jc,kc) = -k_infty*(shockXtau(ic,kc)-C_inf)*sin(k_infty*((x_grid(ic,jc,kc)-1.d0)-C_inf * Time_RK3));
-         
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = epsilon * i_t(ic,jc,kc);
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;
-            P_per(ic,jc,kc)    = epsilon * mach_ref * gamma* i_t(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-           
-          Rho_pert_tau(ic,jc,kc)= epsilon * mach_ref * i_t_tau(ic,jc,kc);
-            U_pert_tau(ic,jc,kc) = epsilon * i_t_tau(ic,jc,kc);
-            V_pert_tau(ic,jc,kc) = 0.d0;
-            W_pert_tau(ic,jc,kc) = 0.d0;
-            P_pert_tau(ic,jc,kc) = epsilon * mach_ref * gamma* i_t_tau(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-            
-          Rho_free(ic,jc,kc)   = Rho_inf + Rho_per(ic,jc,kc);
-            U_free(ic,jc,kc)   = U_inf   + U_per(ic,jc,kc);
-            V_free(ic,jc,kc)   = V_inf   + V_per(ic,jc,kc);
-            W_free(ic,jc,kc)   = W_inf   + W_per(ic,jc,kc);
-            P_free(ic,jc,kc)   = P_inf   + P_per(ic,jc,kc);
-          
-          elseif (Pert_Type .EQ. 2)then !slow
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = - epsilon * i_t(ic,jc,kc);
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;            
-            P_per(ic,jc,kc)    = epsilon * mach_ref * gamma* i_t(ic,jc,kc)/ ( gamma * mach_ref * mach_ref );
-          elseif (Pert_Type .EQ. 3)then
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = 0.d0;
-            V_per(ic,jc,kc)    = 0.d0;
-            W_per(ic,jc,kc)    = 0.d0;   
-            P_per(ic,jc,kc)    = 0.d0;
-          !if (Pert_Type .EQ. 4)then
-          else
-          Rho_per(ic,jc,kc)    = epsilon * mach_ref * i_t(ic,jc,kc);
-            U_per(ic,jc,kc)    = 0.d0;
-            V_per(ic,jc,kc)    = epsilon * i_t(ic,jc,kc);
-            W_per(ic,jc,kc)    = 0.d0;            
-            P_per(ic,jc,kc)    = 0.d0;                
-          endif    
-        enddo
-      enddo
+      CALL Update_Unsteady_Freestream(Time_RK3)
       
       CALL Calculate_ShockAC3D_unsteady
    
@@ -471,13 +286,55 @@ Module Runge_Kutta_4
     
       
    ! ==============================================
-  Deallocate(Rho_per)
-  Deallocate(U_per)
-  Deallocate(V_per)
-  Deallocate(W_per)
-  Deallocate(P_per)
-  Deallocate(i_t)
-  Deallocate(i_t_tau)
   
   END SUBROUTINE IncreamentRK4_unsteady
+  SUBROUTINE Update_Unsteady_Freestream(time)
+    use SF_CFD_Global, only: Pert_Type,C_inf,k_infty,epsilon,Mach_Ref,Gamma, &
+      Rho_inf,U_inf,V_inf,W_inf,P_inf,x_grid,shockXtau,nx_local,Ny,nz_local, &
+      Rho_free,U_free,V_free,W_free,P_free,T_free, &
+      Rho_pert_tau,U_pert_tau,V_pert_tau,W_pert_tau,P_pert_tau
+    use MPI_GLOBAL, only: MPI_COMM_WORLD,ierr
+    use mpi, only: MPI_Abort
+    implicit none
+    real(kind=rk), intent(in) :: time
+    real(kind=rk) :: phase,wave,wave_tau,rho_amp,u_amp,v_amp,p_amp
+    integer(kind=ik) :: ic,kc
+    rho_amp = epsilon*Mach_Ref
+    u_amp = 0.d0
+    v_amp = 0.d0
+    p_amp = 0.d0
+    select case(Pert_Type)
+    case(1,2)
+      u_amp = epsilon
+      if(Pert_Type == 2) u_amp = -epsilon
+      p_amp = epsilon/Mach_Ref
+    case(3)
+      ! Entropy forcing has density but no pressure or velocity fluctuation.
+    case(4)
+      rho_amp = 0.d0
+      v_amp = epsilon
+    case default
+      write(*,*)'Invalid unsteady perturbation type:',Pert_Type
+      call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+      stop
+    end select
+    do kc=1,nz_local
+      do ic=1,nx_local
+        phase = k_infty*((x_grid(ic,Ny,kc)-1.d0)-C_inf*time)
+        wave = cos(phase)
+        wave_tau = -k_infty*(shockXtau(ic,kc)-C_inf)*sin(phase)
+        Rho_free(ic,Ny,kc) = Rho_inf+rho_amp*wave
+        U_free(ic,Ny,kc) = U_inf+u_amp*wave
+        V_free(ic,Ny,kc) = V_inf+v_amp*wave
+        W_free(ic,Ny,kc) = W_inf
+        P_free(ic,Ny,kc) = P_inf+p_amp*wave
+        T_free(ic,Ny,kc) = Gamma*Mach_Ref**2*P_free(ic,Ny,kc)/Rho_free(ic,Ny,kc)
+        Rho_pert_tau(ic,Ny,kc) = rho_amp*wave_tau
+        U_pert_tau(ic,Ny,kc) = u_amp*wave_tau
+        V_pert_tau(ic,Ny,kc) = v_amp*wave_tau
+        W_pert_tau(ic,Ny,kc) = 0.d0
+        P_pert_tau(ic,Ny,kc) = p_amp*wave_tau
+      enddo
+    enddo
+  END SUBROUTINE Update_Unsteady_Freestream
 End Module Runge_Kutta_4

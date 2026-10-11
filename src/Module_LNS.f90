@@ -38,11 +38,19 @@ Module SF_LNS
   contains
 
   subroutine LNS_Solver
+#ifdef LNS_FPE_CHECK
+    use, intrinsic :: ieee_arithmetic, only: ieee_set_halting_mode, ieee_invalid, ieee_divide_by_zero, ieee_overflow
+#endif
     implicit none
     integer( kind = ik ):: LNS_Steps,ic,jc,kc
    
     ! read ShockH and ShockV and Ucons0 from the previous NS simulation
     call ReadSteadyState
+#ifdef LNS_FPE_CHECK
+    call ieee_set_halting_mode(ieee_invalid,.true.)
+    call ieee_set_halting_mode(ieee_divide_by_zero,.true.)
+    call ieee_set_halting_mode(ieee_overflow,.true.)
+#endif
 
     IF(IF_Continue_LNS == 1)then
        call Check_LNS_Metadata
@@ -253,9 +261,9 @@ Module SF_LNS
         LNS_ShockVp1 = LNS_ShockVp0     
         
     
-    do ic = 1-overLap, nx_local+overLap
+    do ic = 1, nx_local
         do jc = 1, Ny
-            do kc = 1-overLap, nz_local+overLap
+            do kc = 1, nz_local
                 call CVtoU_pert(Rho0(ic,jc,kc),U0(ic,jc,kc),V0(ic,jc,kc),W0(ic,jc,kc),P0(ic,jc,kc),LNS_CVp0(1:NumVar,ic,jc,kc),&
                              &   Rho_pert(ic,jc,kc), U_pert(ic,jc,kc), V_pert(ic,jc,kc), W_pert(ic,jc,kc), P_pert(ic,jc,kc))
                 !T_pert(ic,jc,kc) = (Gamma * Mach_Ref * Mach_Ref *( P0(ic,jc,kc)+ P_pert(ic,jc,kc)) - Rho_pert(ic,jc,kc) * T0(ic,jc,kc)- Rho0(ic,jc,kc) * T0(ic,jc,kc)) / Rho0(ic,jc,kc)
@@ -308,10 +316,14 @@ Module SF_LNS
     shockAc_local = 0.0_rk
     shockAcd_local = 0.0_rk
 
+     ! Primal arguments are the unforced base; forcing belongs to the tangent.
      call COMPLETEFLUX_UN_D(Ucons0_steady,ucons0d_local,shockH_steady,shockHd_local,shockV_steady,shockVd_local,&
-                        &Rho_free,Rho_free-Rho_inf,U_free,U_free-U_inf,V_free,V_free-V_inf,W_free,W_free-W_inf,P_free,P_free-P_inf,&
-                        &Rho_pert_tau,Rho_pert_tau,U_pert_tau,U_pert_tau,V_pert_tau,V_pert_tau,W_pert_tau,W_pert_tau,&
-                        &P_pert_tau,P_pert_tau,nx_local,Ny,nz_local,overLap,&
+                        &Rho_inf+0.d0*Rho_free,Rho_free-Rho_inf,U_inf+0.d0*U_free,U_free-U_inf,&
+                        &V_inf+0.d0*V_free,V_free-V_inf,W_inf+0.d0*W_free,W_free-W_inf,&
+                        &P_inf+0.d0*P_free,P_free-P_inf,&
+                        &0.d0*Rho_pert_tau,Rho_pert_tau,0.d0*U_pert_tau,U_pert_tau,&
+                        &0.d0*V_pert_tau,V_pert_tau,0.d0*W_pert_tau,W_pert_tau,&
+                        &0.d0*P_pert_tau,P_pert_tau,nx_local,Ny,nz_local,overLap,&
                         &Gamma,Mach_Ref,Re_Ref,Csthlnd_Ref,Pr_Ref,LaxFriSmall,&
                         &Finv_inf,Ginv_inf,Hinv_inf,CV_inf,WallSX,WallSY,WallSZ,&
                         &WallSXdxi,WallSYdxi,WallSZdxi,WallSXdzeta,WallSYdzeta,WallSZdzeta,&
@@ -342,8 +354,9 @@ Module SF_LNS
     real (kind = rk ), dimension(1-overlap:nx_local+overlap,1:Ny,1-overlap:nz_local+overlap) :: sRho_local,sU_local,sV_local,sW_local,sP_local,sT_local
      
     call LINEARIZED_SHOCKBC_D(shockh_steady, shockhd_local, shockv_steady, shockvd_local, &
-                            & Rho_free,Rho_free-Rho_inf,U_free,U_free-U_inf,V_free,V_free-V_inf,W_free,W_free-W_inf,&
-                            & P_free,P_free-P_inf,nx_local, ny, nz_local, overlap, gamma, mach_ref, re_ref,&
+                            & Rho_inf+0.d0*Rho_free,Rho_free-Rho_inf,U_inf+0.d0*U_free,U_free-U_inf,&
+                            & V_inf+0.d0*V_free,V_free-V_inf,W_inf+0.d0*W_free,W_free-W_inf,&
+                            & P_inf+0.d0*P_free,P_free-P_inf,nx_local, ny, nz_local, overlap, gamma, mach_ref, re_ref,&
                             & wallsx, wallsy, wallsz, k_infty, epsilon, pert_type, wallsxdxi, wallsydxi, &
                             & wallszdxi, wallsxdzeta, wallsydzeta, wallszdzeta, wallnormalx, &
                             & wallnormaly, wallnormalz, wallnormalxdxi, wallnormalydxi, &
@@ -664,9 +677,15 @@ Module SF_LNS
     sT = 0.d0
     
     !transfer basic variables
-    do ic = 1-overLap, nx_local+overLap
+    Rho_pert = 0.d0
+    U_pert = 0.d0
+    V_pert = 0.d0
+    W_pert = 0.d0
+    P_pert = 0.d0
+    T_pert = 0.d0
+    do ic = 1, nx_local
         do jc = 1, Ny
-            do kc = 1-overLap, nz_local+overLap
+            do kc = 1, nz_local
                 call CVtoU_pert(Rho0(ic,jc,kc),U0(ic,jc,kc),V0(ic,jc,kc),W0(ic,jc,kc),P0(ic,jc,kc),LNS_CVp0(1:NumVar,ic,jc,kc),&
                              &  Rho_pert(ic,jc,kc), U_pert(ic,jc,kc), V_pert(ic,jc,kc), W_pert(ic,jc,kc), P_pert(ic,jc,kc))
                 !T_pert(ic,jc,kc) = (Gamma * Mach_Ref * Mach_Ref *( P0(ic,jc,kc)+ P_pert(ic,jc,kc)) - Rho_pert(ic,jc,kc) * T0(ic,jc,kc)- Rho0(ic,jc,kc) * T0(ic,jc,kc)) / Rho0(ic,jc,kc)
@@ -679,8 +698,8 @@ Module SF_LNS
    
    ! Here we update the perturbations along the shock surfaces
     jc = Ny
-    DO kc = 1-overLap, nz_local+overLap
-      DO ic = 1-overLap, nx_local+overLap
+    DO kc = 1, nz_local
+      DO ic = 1, nx_local
        Rho_pert(ic,jc,kc) = sRho(ic,jc,kc)
          U_pert(ic,jc,kc) = sU(ic,jc,kc)
          V_pert(ic,jc,kc) = sV(ic,jc,kc)
@@ -694,8 +713,8 @@ Module SF_LNS
     ENDDO
     
     jc = 1
-    DO kc = 1-overLap, nz_local+overLap
-      DO ic = 1-overLap, nx_local+overLap
+    DO kc = 1, nz_local
+      DO ic = 1, nx_local
       U_pert(ic,jc,kc) = 0.d0;
       V_pert(ic,jc,kc) = 0.d0;
       W_pert(ic,jc,kc) = 0.d0;
@@ -839,6 +858,7 @@ Module SF_LNS
  
     do kc = 1, nz_local
       do ic = 1,nx_local
+          loc_jc = 2*Ny-1
           do jc = 1,2*Ny-1
           	 if (Hdst_interp(ic,jc,kc) .GE. ShockH_steady(ic,kc))then
               loc_jc = jc
@@ -862,6 +882,8 @@ Module SF_LNS
       enddo 
     enddo
     
+    ! The legacy planar stream is only meaningful without z decomposition.
+    if(npz0 == 1) then
         if(MyId == 0) then
         write(filename_flow,'(A,A,"_",I5.5,A)')'LNSResults/',trim(PertForContinue),OutputFileNo,'.dat'
         open(55,file=filename_flow,form='unformatted',access = 'stream')
@@ -878,6 +900,7 @@ Module SF_LNS
         if(MyId == 0) then
         close(55)
         endif   
+    endif
     ! Output the perturbation shock height/the perturbation shock velocity
      OutputFileNo = OutputFileNo + 1; 
      
@@ -1019,6 +1042,7 @@ Module SF_LNS
 !end subroutine CubicSplineInterp1D 
 
 SUBROUTINE Calculate_freestream(Iter)
+    use mpi, only: MPI_Abort
     IMPLICIT NONE
     integer( kind = ik ), intent(in) :: Iter
     integer( kind = ik ):: i,j,k
@@ -1036,13 +1060,26 @@ SUBROUTINE Calculate_freestream(Iter)
     
    !CALL MPI_Barrier(MPI_COMM_WORLD,ierr); 
     
+     rho_free = rho_inf
+     u_free = u_inf
+     v_free = v_inf
+     w_free = w_inf
+     p_free = p_inf
+     t_free = t_inf
+     rho_pert_tau = 0.d0
+     u_pert_tau = 0.d0
+     v_pert_tau = 0.d0
+     w_pert_tau = 0.d0
+     p_pert_tau = 0.d0
      j = ny
-      do k = 1-overlap,nz_local+overlap
-        do i = 1-overlap,nx_local+overlap
+      do k = 1,nz_local
+        do i = 1,nx_local
 
-    if (pert_type .eq. 1)then !fast 
-          i_t(i,j,k) = cos(k_infty*((x_grid(i,j,k)-1.d0) - C_inf * LNS_dt * Iter));
-      i_t_tau(i,j,k) = -k_infty*(shockxtau(i,k)-c_inf)*sin(k_infty*((x_grid(i,j,k)-1.d0) - C_inf * LNS_dt * Iter));
+          ! Linear forcing is evaluated on the fixed base-flow shock.
+          i_t(i,j,k) = cos(k_infty*((x_grid_steady(i,j,k)-1.d0) - C_inf * LNS_dt * Iter));
+      i_t_tau(i,j,k) = -k_infty*(shockXtau_steady(i,k)-c_inf)*sin(k_infty*((x_grid_steady(i,j,k)-1.d0) - C_inf * LNS_dt * Iter));
+
+    if (pert_type .eq. 1)then !fast
        
           rho_per(i,j,k)    = epsilon * mach_ref * i_t(i,j,k);  
             u_per(i,j,k)    = epsilon * i_t(i,j,k);
@@ -1050,18 +1087,6 @@ SUBROUTINE Calculate_freestream(Iter)
             w_per(i,j,k)    = 0.d0;
             p_per(i,j,k)    = epsilon * mach_ref * gamma* i_t(i,j,k)/ ( gamma * mach_ref * mach_ref );
            
-        rho_pert_tau(i,j,k) = epsilon * mach_ref * i_t_tau(i,j,k);
-          u_pert_tau(i,j,k) = epsilon * i_t_tau(i,j,k);
-          v_pert_tau(i,j,k) = 0.d0;
-          w_pert_tau(i,j,k) = 0.d0;
-          p_pert_tau(i,j,k) = epsilon * mach_ref * gamma * i_t_tau(i,j,k)/ ( gamma * mach_ref * mach_ref );
-            
-           rho_free(i,j,k)  = rho_inf + rho_per(i,j,k);
-             u_free(i,j,k)  = u_inf   + u_per(i,j,k);
-             v_free(i,j,k)  = v_inf   + v_per(i,j,k);
-             w_free(i,j,k)  = w_inf   + w_per(i,j,k);
-             p_free(i,j,k)  = p_inf   + p_per(i,j,k);
-             t_free(i,j,k)  = gamma * mach_ref * mach_ref * p_free(i,j,k) / rho_free(i,j,k);
           elseif (pert_type .eq. 2)then !slow
           rho_per(i,j,k)    = epsilon * mach_ref * i_t(i,j,k);
             u_per(i,j,k)    = - epsilon * i_t(i,j,k);
@@ -1074,14 +1099,37 @@ SUBROUTINE Calculate_freestream(Iter)
             v_per(i,j,k)    = 0.d0;
             w_per(i,j,k)    = 0.d0;   
             p_per(i,j,k)    = 0.d0;
-          !if (pert_type .eq. 4)then
-          else
-          rho_per(i,j,k)    = epsilon * mach_ref * i_t(i,j,k);
+          elseif (pert_type .eq. 4)then
+          rho_per(i,j,k)    = 0.d0;
             u_per(i,j,k)    = 0.d0;
             v_per(i,j,k)    = epsilon * i_t(i,j,k);
             w_per(i,j,k)    = 0.d0;            
             p_per(i,j,k)    = 0.d0;                
-          endif    
+          else
+            write(*,*)'Invalid LNS perturbation type:',pert_type
+            call MPI_Abort(MPI_COMM_WORLD,1,ierr)
+            stop
+          endif
+          ! Set every forcing field for all four supported wave types.
+          rho_pert_tau(i,j,k) = epsilon * mach_ref * i_t_tau(i,j,k)
+          u_pert_tau(i,j,k) = 0.d0
+          v_pert_tau(i,j,k) = 0.d0
+          w_pert_tau(i,j,k) = 0.d0
+          p_pert_tau(i,j,k) = 0.d0
+          if(pert_type == 1 .or. pert_type == 2) then
+            u_pert_tau(i,j,k) = epsilon * i_t_tau(i,j,k)
+            if(pert_type == 2) u_pert_tau(i,j,k) = -u_pert_tau(i,j,k)
+            p_pert_tau(i,j,k) = epsilon * i_t_tau(i,j,k) / mach_ref
+          elseif(pert_type == 4) then
+            rho_pert_tau(i,j,k) = 0.d0
+            v_pert_tau(i,j,k) = epsilon * i_t_tau(i,j,k)
+          endif
+          rho_free(i,j,k) = rho_inf + rho_per(i,j,k)
+          u_free(i,j,k) = u_inf + u_per(i,j,k)
+          v_free(i,j,k) = v_inf + v_per(i,j,k)
+          w_free(i,j,k) = w_inf + w_per(i,j,k)
+          p_free(i,j,k) = p_inf + p_per(i,j,k)
+          t_free(i,j,k) = gamma * mach_ref**2 * p_free(i,j,k) / rho_free(i,j,k)
         enddo
       enddo  
 

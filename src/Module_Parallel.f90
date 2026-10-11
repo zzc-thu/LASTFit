@@ -8,7 +8,6 @@ MODULE MPI_GLOBAL
   logical :: If_parallel
   ! Define MPI Buffer Size
   ! Define the buffer layer for MPI sendrecv
-  INTEGER( kind = ik ), PARAMETER:: IBUFFER_SIZE = 100000000;
   ! Define the MPI Communicator
   INTEGER( kind = ik ):: MyId           ! My process ID           
   INTEGER( kind = ik ):: NumProcess     ! Number of processes
@@ -40,7 +39,6 @@ MODULE MPI_GLOBAL
   INTEGER( kind = ik )::K_offset(0:1024),K_nn(0:1024)
 
   ! Define MPI Buffer Zone
-  REAL( kind = rk ):: BUFFER_MPI(IBUFFER_SIZE)
 
   ! allocate some arrays for multi-variables transfer
   REAL( kind = rk ),ALLOCATABLE:: Temp_Send1_2D_xi(:),Temp_Send2_2D_xi(:)
@@ -80,7 +78,6 @@ SUBROUTINE Parallel_Initilize
   CALL MPI_INIT(ierr)
   CALL MPI_COMM_RANK(MPI_COMM_WORLD, MyId, ierr)
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD, NumProcess, ierr)
-  CALL MPI_BUFFER_ATTACH(BUFFER_MPI,8*IBUFFER_SIZE, ierr)
 
   
     If_parallel = .TRUE.

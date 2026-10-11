@@ -122,7 +122,7 @@ use MPI_GLOBAL,   only: Parallel_Exchange_Surface, Parallel_Exchange,&
 & overlap:nz_local+overlap)
   REAL*8, INTENT(OUT) :: std(1-overlap:nx_local+overlap, ny_local, 1-&
 & overlap:nz_local+overlap)
-  INTEGER :: ic, jc, kc
+  INTEGER :: ic, jc, kc, ix_lo, ix_hi
   REAL*8, DIMENSION(:, :, :), ALLOCATABLE :: x_grid, y_grid, z_grid
   REAL*8, DIMENSION(:, :), ALLOCATABLE :: shockhdzeta, shockhdxi, &
 & shockvdzeta, shockvdxi
@@ -155,117 +155,186 @@ use MPI_GLOBAL,   only: Parallel_Exchange_Surface, Parallel_Exchange,&
   REAL*8 :: temp0
   REAL*8 :: temp1
   REAL*8 :: temp2
+  ! Evaluate owned cells only; existing exchanges fill stencil halos.
+  ix_lo = 1
+  ix_hi = nx_local
+  srho = 0.d0
+  srhod = 0.d0
+  su = 0.d0
+  sud = 0.d0
+  sv = 0.d0
+  svd = 0.d0
+  sw = 0.d0
+  swd = 0.d0
+  sp = 0.d0
+  spd = 0.d0
+  st = 0.d0
+  std = 0.d0
   ALLOCATE(x_grid(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  x_grid = 0.d0
   ALLOCATE(y_grid(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  y_grid = 0.d0
   ALLOCATE(z_grid(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  z_grid = 0.d0
   ALLOCATE(shockhdzetad(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shockhdzetad = 0.d0
   ALLOCATE(shockhdzeta(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shockhdzeta = 0.d0
   ALLOCATE(shockhdxid(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shockhdxid = 0.d0
   ALLOCATE(shockhdxi(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shockhdxi = 0.d0
   ALLOCATE(shockvdzetad(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shockvdzetad = 0.d0
   ALLOCATE(shockvdzeta(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shockvdzeta = 0.d0
   ALLOCATE(shockvdxid(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shockvdxid = 0.d0
   ALLOCATE(shockvdxi(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shockvdxi = 0.d0
   ALLOCATE(dxdxid(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxdxid = 0.d0
   ALLOCATE(dxdxi(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxdxi = 0.d0
   ALLOCATE(dydxid(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dydxid = 0.d0
   ALLOCATE(dydxi(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dydxi = 0.d0
   ALLOCATE(dzdxid(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzdxid = 0.d0
   ALLOCATE(dzdxi(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzdxi = 0.d0
   ALLOCATE(dxdetad(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxdetad = 0.d0
   ALLOCATE(dxdeta(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxdeta = 0.d0
   ALLOCATE(dydetad(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dydetad = 0.d0
   ALLOCATE(dydeta(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dydeta = 0.d0
   ALLOCATE(dzdetad(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzdetad = 0.d0
   ALLOCATE(dzdeta(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzdeta = 0.d0
   ALLOCATE(dxdzetad(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxdzetad = 0.d0
   ALLOCATE(dxdzeta(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxdzeta = 0.d0
   ALLOCATE(dydzetad(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dydzetad = 0.d0
   ALLOCATE(dydzeta(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dydzeta = 0.d0
   ALLOCATE(dzdzetad(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzdzetad = 0.d0
   ALLOCATE(dzdzeta(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzdzeta = 0.d0
   ALLOCATE(jacod(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  jacod = 0.d0
   ALLOCATE(jaco(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  jaco = 0.d0
   ALLOCATE(invjacodt(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  invjacodt = 0.d0
   ALLOCATE(dxidx(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxidx = 0.d0
   ALLOCATE(dxidy(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxidy = 0.d0
   ALLOCATE(dxidz(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dxidz = 0.d0
   ALLOCATE(detadxd(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  detadxd = 0.d0
   ALLOCATE(detadx(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  detadx = 0.d0
   ALLOCATE(detadyd(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  detadyd = 0.d0
   ALLOCATE(detady(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  detady = 0.d0
   ALLOCATE(detadzd(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  detadzd = 0.d0
   ALLOCATE(detadz(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  detadz = 0.d0
   ALLOCATE(dzetadx(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzetadx = 0.d0
   ALLOCATE(dzetady(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzetady = 0.d0
   ALLOCATE(dzetadz(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  dzetadz = 0.d0
   ALLOCATE(nablaxi(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  nablaxi = 0.d0
   ALLOCATE(nablaetad(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  nablaetad = 0.d0
   ALLOCATE(nablaeta(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  nablaeta = 0.d0
   ALLOCATE(nablazeta(1-overlap:nx_local+overlap, 1:ny_local, 1-overlap:&
 & nz_local+overlap))
+  nablazeta = 0.d0
   ALLOCATE(shocknormalxd(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shocknormalxd = 0.d0
   ALLOCATE(shocknormalx(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shocknormalx = 0.d0
   ALLOCATE(shocknormalyd(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shocknormalyd = 0.d0
   ALLOCATE(shocknormaly(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shocknormaly = 0.d0
   ALLOCATE(shocknormalzd(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
+  shocknormalzd = 0.d0
   ALLOCATE(shocknormalz(1-overlap:nx_local+overlap, 1-overlap:nz_local+&
 & overlap))
-  DO kc=1-overlap,nz_local+overlap
+  shocknormalz = 0.d0
+  DO kc=1,nz_local
     DO jc=1,ny_local
-      DO ic=1-overlap,nx_local+overlap
+      DO ic=ix_lo,ix_hi
         x_grid(ic, jc, kc) = wallsx(ic, kc) + wallnormalx(ic, kc)*shockh&
 &         (ic, kc)*heta(ic, jc, kc)
         y_grid(ic, jc, kc) = wallsy(ic, kc) + wallnormaly(ic, kc)*shockh&
@@ -301,9 +370,9 @@ CALL Parallel_Exchange_surface(shockVd)
   CALL Parallel_Exchange_surface(shockvdzeta)
   CALL Parallel_Exchange_surface(shockvdzetad)
   
-  DO kc=1-overlap,nz_local+overlap
+  DO kc=1,nz_local
     DO jc=1,ny_local
-      DO ic=1-overlap,nx_local+overlap
+      DO ic=ix_lo,ix_hi
         dxdxid(ic, jc, kc) = heta(ic, jc, kc)*(wallnormalxdxi(ic, kc)*&
 &         shockhd(ic, kc)+wallnormalx(ic, kc)*shockhdxid(ic, kc)) + &
 &         hetadxi(ic, jc, kc)*wallnormalx(ic, kc)*shockhd(ic, kc)
@@ -472,8 +541,8 @@ CALL Parallel_Exchange_surface(shockVd)
     END DO
   END DO
   jc = ny_local
-  DO kc=1-overlap,nz_local+overlap
-    DO ic=1-overlap,nx_local+overlap
+  DO kc=1,nz_local
+    DO ic=ix_lo,ix_hi
       temp2 = detadx(ic, jc, kc)/nablaeta(ic, jc, kc)
       shocknormalxd(ic, kc) = (detadxd(ic, jc, kc)-temp2*nablaetad(ic, &
 &       jc, kc))/nablaeta(ic, jc, kc)
@@ -504,8 +573,8 @@ CALL Parallel_Exchange_surface(shockVd)
   sud = 0.0_8
   svd = 0.0_8
   swd = 0.0_8
-  DO kc=1-overlap,nz_local+overlap
-    DO ic=1-overlap,nx_local+overlap
+  DO kc=1,nz_local
+    DO ic=ix_lo,ix_hi
 !Velocity ahead of the shocks
       temp2 = wallnormalx(ic, kc)*shocknormalx(ic, kc) + wallnormaly(ic&
 &       , kc)*shocknormaly(ic, kc) + wallnormalz(ic, kc)*shocknormalz(ic&

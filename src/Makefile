@@ -84,10 +84,10 @@ Module_OutputParaView.o: Module_OutputParaView.f90 Module_Constant.o Module_CFD.
 Module_SFitting.o: Module_Constant.o Module_CFD.o Module_Parallel.o
 	$(FC) $(FLFLAGS) -c Module_SFitting.f90
 
-Module_RK4.o: Module_RK4.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Module_RK4.o: Module_RK4.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_OutputParaView.o Module_SFitting.o
 	$(FC) $(FLFLAGS) -c Module_RK4.f90
 
-Module_DPLUR.o: Module_DPLUR.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Module_DPLUR.o: Module_DPLUR.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_FD_5th.o Module_SFitting.o
 	$(FC) $(FLFLAGS) -c Module_DPLUR.f90 $(LIBS)
 
 Module_MultiGrid.o: Module_MultiGrid.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
@@ -96,10 +96,10 @@ Module_MultiGrid.o: Module_MultiGrid.f90 Module_Constant.o Module_CFD.o Module_P
 Module_FD_1st.o: Module_FD_1st.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
 	$(FC) $(FLFLAGS) -c Module_FD_1st.f90
 
-Module_Krylov.o: Module_Krylov.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Module_Krylov.o: Module_Krylov.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_SFitting.o
 	$(FC) $(FLFLAGS) -c Module_Krylov.f90 $(LIBS)
 
-Module_LNS.o: Module_LNS.f90 Module_Constant.o Module_CFD.o
+Module_LNS.o: Module_LNS.f90 Module_Constant.o Module_CFD.o Module_Griddistributions.o Module_OutputParaView.o Module_Parallel.o Module_SFitting.o
 	$(FC) $(FLFLAGS) -c Module_LNS.f90
 
 util.o: util.f90 Module_Constant.o Module_CFD.o
@@ -108,31 +108,31 @@ util.o: util.f90 Module_Constant.o Module_CFD.o
 Read_Para.o: Read_Para.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
 	$(FC) $(FLFLAGS) -c Read_Para.f90
 
-Initial_Grid.o: Initial_Grid.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Initial_Grid.o: Initial_Grid.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_FD_5th.o Module_OutputParaView.o
 	$(FC) $(FLFLAGS) -c Initial_Grid.f90
 
-Singular_Initial_Grid.o: Singular_Initial_Grid.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Singular_Initial_Grid.o: Singular_Initial_Grid.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_FD_5th.o Module_OutputParaView.o
 	$(FC) $(FLFLAGS) -c Singular_Initial_Grid.f90
 
-Calculate_Jaco.o: Calculate_Jaco.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Calculate_Jaco.o: Calculate_Jaco.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_FD_5th.o Module_OutputParaView.o
 	$(FC) $(FLFLAGS) -c Calculate_Jaco.f90
 
-Initial_Fields.o: Initial_Fields.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Initial_Fields.o: Initial_Fields.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_OutputParaView.o Module_SFitting.o
 	$(FC) $(FLFLAGS) -c Initial_Fields.f90
 
-Singular_Initial_Fields.o: Singular_Initial_Fields.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Singular_Initial_Fields.o: Singular_Initial_Fields.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_OutputParaView.o Module_SFitting.o
 	$(FC) $(FLFLAGS) -c Singular_Initial_Fields.f90
 
 Calculate_TimeSteps.o: Calculate_TimeSteps.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
 	$(FC) $(FLFLAGS) -c Calculate_TimeSteps.f90
 
-Calculate_Flux.o: Calculate_Flux.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Calculate_Flux.o: Calculate_Flux.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_FD_1st.o Module_FD_5th.o
 	$(FC) $(FLFLAGS) -c Calculate_Flux.f90
 
-Calculate_Pert.o: Calculate_Pert.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Calculate_Pert.o: Calculate_Pert.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_Griddistributions.o Module_OutputParaView.o Module_SFitting.o
 	$(FC) $(FLFLAGS) -c Calculate_Pert.f90
 
-Update_Variables.o: Update_Variables.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
+Update_Variables.o: Update_Variables.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_SFitting.o
 	$(FC) $(FLFLAGS) -c Update_Variables.f90
 
 #Calculate_Pert.o: Calculate_Pert.f90 Module_Constant.o Module_CFD.o Module_Parallel.o
@@ -141,7 +141,7 @@ Update_Variables.o: Update_Variables.f90 Module_Constant.o Module_CFD.o Module_P
 OutputResults.o: OutputResults.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_OutputParaView.o
 	$(FC) $(FLFLAGS) -c OutputResults.f90
 
-Calculate_AcDeri.o: Calculate_AcDeri.f90
+Calculate_AcDeri.o: Calculate_AcDeri.f90 Module_Constant.o
 	$(FC) $(FLFLAGS) -c Calculate_AcDeri.f90
 
 Calculate_UshkDeri_CV1.o: Calculate_UshkDeri_CV1.f90
@@ -171,7 +171,7 @@ LNS_shockBC_d.o: LNS_shockBC_d.f90 Module_Parallel.o
 #TestCompleteFlux.o: TestCompleteFlux.f90 Module_Constant.o Module_CFD.o CompleteFlux_D_mpi.o
 #	$(FC) $(FLFLAGS) -c TestCompleteFlux.f90
 
-main.o: main.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_RK4.o \
+main.o: main.f90 Module_Constant.o Module_CFD.o Module_Parallel.o Module_RK4.o \ Module_DPLUR.o Module_Krylov.o Module_LNS.o Module_Monitor.o Module_OutputParaView.o
 Module_DPLUR.o Module_Krylov.o Module_Monitor.o Module_LNS.o
 	$(FC) $(FLFLAGS) -c main.f90
 

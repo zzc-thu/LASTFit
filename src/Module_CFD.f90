@@ -1,6 +1,6 @@
 MODULE SF_CFD_Global
   use SF_Constant, only: ik,rk,NumVar
-  use SF_Constant, only: LNS_Analysis,Unsteady_NS_Analysis
+  use SF_Constant, only: LNS_Analysis,Unsteady_NS_Analysis,RK4_Methods,GMRES_Methods
   implicit none
   
   LOGICAL             :: IfConverge=.FALSE. ! logical judge of the converge
@@ -1030,6 +1030,8 @@ SUBROUTINE Initilize_SFSolver
   ALLOCATE(DIAG(nx_min:nx_max,1:Ny,nz_min:nz_max))
 
   DIAG = 0.d0;
+  ! DIAG is shared with CFL time stepping; flux Jacobians are implicit-only.
+  if(Select_Kind_Solver /= RK4_Methods .and. AnalysisType /= LNS_Analysis) then
 
   ALLOCATE(DFhatDU(1:NumVar,1:NumVar,nx_min:nx_max,1:Ny,nz_min:nz_max))
   ALLOCATE(DGhatDU(1:NumVar,1:NumVar,nx_min:nx_max,1:Ny,nz_min:nz_max))
@@ -1068,6 +1070,7 @@ SUBROUTINE Initilize_SFSolver
   DvisHhatDpxi = 0.d0;
   DvisHhatDpet = 0.d0;
   DvisHhatDpzt = 0.d0;
+  endif
   
   ALLOCATE(dUconsRK1(1:NumVar,nx_min:nx_max,1:Ny,nz_min:nz_max))
   ALLOCATE(dUconsRK2(1:NumVar,nx_min:nx_max,1:Ny,nz_min:nz_max))
@@ -1244,6 +1247,7 @@ SUBROUTINE Initilize_SFSolver
   DU_Deta = 0.d0;
  
   !这里存储的是三对角块矩阵的LU分解的结果，这里我们分解的形式是单位上三角矩阵和下三角矩阵
+  if(Select_Kind_Solver /= RK4_Methods .and. AnalysisType /= LNS_Analysis) then
   ALLOCATE(L_LUall(1:NumVar,1:NumVar,nx_min:nx_max,1:Ny,nz_min:nz_max))
   ALLOCATE(D_LUall(1:NumVar,1:NumVar,nx_min:nx_max,1:Ny,nz_min:nz_max))
   ALLOCATE(U_LUall(1:NumVar,1:NumVar,nx_min:nx_max,1:Ny,nz_min:nz_max))
@@ -1251,6 +1255,7 @@ SUBROUTINE Initilize_SFSolver
   L_LUall = 0.d0;
   D_LUall = 0.d0;
   U_LUall = 0.d0;
+  endif
 
   ALLOCATE(L_LUacUm(1:NumVar,nx_min:nx_max,nz_min:nz_max))
   ALLOCATE(L_LUacUs(1:NumVar,nx_min:nx_max,nz_min:nz_max))
@@ -1388,6 +1393,7 @@ SUBROUTINE Initilize_SFSolver
    DeltaSolu = 0.d0;
 
   ! Gmres
+  if(Select_Kind_Solver == GMRES_Methods .and. AnalysisType /= LNS_Analysis) then
   ALLOCATE(BSS_A(nx_min:nx_max,nz_min:nz_max,MaxKrylovSubSpace+1))
   ALLOCATE(BSS_V(nx_min:nx_max,nz_min:nz_max,MaxKrylovSubSpace+1))
   ALLOCATE(BSS_U(1:NumVar,nx_min:nx_max,1:Ny,nz_min:nz_max,MaxKrylovSubSpace+1))
@@ -1403,6 +1409,7 @@ SUBROUTINE Initilize_SFSolver
   HessenbergMat = 0.d0;
   Givens = 0.d0;
   Ve = 0.d0;
+  endif
 
   !
 
@@ -1755,10 +1762,13 @@ SUBROUTINE Finilize_SFSolver
   deallocate(ShockHdxi,ShockVdxi,ShockHdzeta,ShockVdzeta)
   deallocate(ShockNormalX,ShockNormalY,ShockNormalZ,ShockXtau,ShockYtau,ShockZtau)
   deallocate(LeftEigenVectorsEta)
-  deallocate(DIAG,DFhatDU,DGhatDU,DHhatDU)
+  deallocate(DIAG)
+  if(allocated(DFhatDU)) then
+  deallocate(DFhatDU,DGhatDU,DHhatDU)
   deallocate(DvisFhatDp,DvisFhatDpxi,DvisFhatDpet,DvisFhatDpzt)
   deallocate(DvisGhatDp,DvisGhatDpxi,DvisGhatDpet,DvisGhatDpzt)
   deallocate(DvisHhatDp,DvisHhatDpxi,DvisHhatDpet,DvisHhatDpzt)
+  endif
   deallocate(dUconsRK1,dUconsRK2,dUconsRK3,dUconsRK4)
   deallocate(Ucons_RK1,Ucons_RK2,Ucons_RK3)
   deallocate(ShockAc_RK1,ShockAc_RK2,ShockAc_RK3,ShockAc_RK4)
@@ -1781,7 +1791,7 @@ SUBROUTINE Finilize_SFSolver
   deallocate(DG_IMDxi, DG_IMDeta, DG_IMDzeta)
   deallocate(DH_IMDxi, DH_IMDeta, DH_IMDzeta)
   deallocate(DU_Deta)
-  deallocate(L_LUall,D_LUall,U_LUall)
+  if(allocated(L_LUall)) deallocate(L_LUall,D_LUall,U_LUall)
   deallocate(L_LUacUm,L_LUacUs)
   deallocate(L_LUacH,L_LUacD)
   deallocate(IPIV)
@@ -1804,6 +1814,9 @@ SUBROUTINE Finilize_SFSolver
   deallocate( BDUSDV)
   deallocate( CDUSDV,CDUSDV_xi,CDUSDV_zeta)
   deallocate( RHS_Krylov, DeltaSolu) 
+  if(allocated(BSS_U)) then
+    deallocate(BSS_A,BSS_V,BSS_U,HessenbergMat,Givens,Ve)
+  endif
 
     
     DEALLOCATE(Rho0)

@@ -164,7 +164,8 @@ SUBROUTINE Parallel_OutputFunction(FileNumber,Uin,Nx,Ny,nx_local,ny_local)
   U = Uin(1:nx_local,1:ny_local)
   !write(*,*)myid,nx_local,Ny,ny_local,npx
   if(myid.EQ.0) then
-    do ki=0,numprocess - 1	    
+    ! A planar stream gathers the caller's slice from the first z partition.
+    do ki=0,npx0 - 1
       np_recv=ki
      if(np_recv.eq.0) then
        do i1=1,nx_local
@@ -185,7 +186,7 @@ SUBROUTINE Parallel_OutputFunction(FileNumber,Uin,Nx,Ny,nx_local,ny_local)
      endif
     enddo
     WRITE(FileNumber)F
-  else    
+  elseif(npz == 0) then
    	do i1=1,nx_local
 	   do j1=1,Ny
 	    buff2(i1,j1)=U(i1,j1)
@@ -193,7 +194,7 @@ SUBROUTINE Parallel_OutputFunction(FileNumber,Uin,Nx,Ny,nx_local,ny_local)
     enddo
     
     ! Attension this buff2 is used along the colum index first
-    call MPI_Bsend(buff2(1,1),nx_local*ny_local,MPI_DOUBLE_PRECISION,0,9001,MPI_COMM_WORLD,ierr)
+    call MPI_Send(buff2(1,1),nx_local*ny_local,MPI_DOUBLE_PRECISION,0,9001,MPI_COMM_WORLD,ierr)
   endif
   
   call MPI_BARRIER(MPI_COMM_WORLD,ierr)
